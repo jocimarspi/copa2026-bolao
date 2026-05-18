@@ -403,8 +403,8 @@ function pSt(mid){
 }
 const RI=i=>i===0?"🥇":i===1?"🥈":i===2?"🥉":`#${i+1}`;
 const RC=i=>i===0?"g":i===1?"s":i===2?"b":"";
-function TN(s){return s.replace(/\s[\u{1F1E0}-\u{1F1FF}]{2}$/u,"").replace(/\s\uD83C[\uDFF4].*$/u,"").trim();}
-function TF(s){const m=s.match(/(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu);return m?m.slice(-1)[0]:"";}
+function TN(s){return s.trim();}
+function TF(s){return"";}
 function UB(k){const u=UNITS[k];if(!u)return"";return`<span class="ubadge" style="background:${u.bg};color:${u.text};border-color:${u.color}">${u.label}</span>`;}
 const $=id=>document.getElementById(id);
 
