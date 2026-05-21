@@ -1,0 +1,41 @@
+import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { MX } from "./matches.js";
+import { TN } from "./helpers.js";
+import { state } from "./state.js";
+
+const APIKEY = "f94a4cd5d9aa247a17505718db07f559";
+
+let ftimer = null;
+
+export async function fetchAPI(db) {
+  if (!state.ME) return;
+  try {
+    const horaAtual = new Date().toISOString().slice(0, 13);
+    const trava = await getDoc(doc(db, "system", "apifetch"));
+    if (trava.exists() && trava.data().hora === horaAtual) {
+      scheduleNext(db);
+      return;
+    }
+    await setDoc(doc(db, "system", "apifetch"), { hora: horaAtual, who: state.ME.email, at: serverTimestamp() });
+    const d = new Date().toISOString().slice(0, 10);
+    const r = await fetch('https://v3.football.api-sports.io/fixtures?league=1&season=2026&date=' + d, { headers: { 'x-apisports-key': APIKEY } });
+    const data = await r.json();
+    for (const fx of (data.response || [])) {
+      const { home, away } = fx.goals; if (home === null || away === null) continue;
+      const live = ["1H", "HT", "2H", "ET", "P"].includes(fx.fixture.status.short);
+      const hn = fx.teams.home.name.toLowerCase().slice(0, 5);
+      const an = fx.teams.away.name.toLowerCase().slice(0, 5);
+      const m = MX.find(x => TN(x.h).toLowerCase().includes(hn) || TN(x.a).toLowerCase().includes(an));
+      if (m) await setDoc(doc(db, "results", String(m.id)), { home, away, live, updatedAt: serverTimestamp() });
+    }
+    console.log("API buscada às", horaAtual, "por", state.ME.email);
+  } catch (e) { console.warn("API", e); }
+  scheduleNext(db);
+}
+
+function scheduleNext(db) {
+  const now = new Date();
+  const msToNextHour = (60 - now.getMinutes()) * 60000 - now.getSeconds() * 1000;
+  if (ftimer) clearTimeout(ftimer);
+  ftimer = setTimeout(() => fetchAPI(db), Math.max(msToNextHour, 60000));
+}
