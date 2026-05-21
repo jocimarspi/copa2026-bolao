@@ -49,7 +49,7 @@ function startListeners() {
     renderPalpites();
     renderLB();
     if (state.ME && isAdm(state.ME.email)) renderAR();
-    if ($("t-grupos")?.classList.contains("on")) renderGrupos();
+    if ($("t-grupos")?.classList.contains("tournament-section--active")) renderGrupos();
   }, err => console.warn("Erro listener results:", err));
 
   unsubUsers = onSnapshot(collection(db, "users"), snap => {
@@ -93,11 +93,11 @@ onAuthStateChanged(auth, async u => {
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 window.GT = function (name) {
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
-  document.querySelectorAll("#nav .nb").forEach(b => b.classList.remove("on"));
-  const tab = $("tab-" + name); if (tab) tab.classList.add("on");
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("tab--active"));
+  document.querySelectorAll("#nav .nav__btn").forEach(b => b.classList.remove("is-active"));
+  const tab = $("tab-" + name); if (tab) tab.classList.add("tab--active");
   const map = { ranking: 0, jogos: 1, palpites: 2, torneio: 3, conta: 4, duvidas: 5, historico: 6, admin: 7 };
-  const idx = map[name]; if (idx !== undefined) document.querySelectorAll("#nav .nb")[idx]?.classList.add("on");
+  const idx = map[name]; if (idx !== undefined) document.querySelectorAll("#nav .nav__btn")[idx]?.classList.add("is-active");
   if (name === "torneio") renderTorneio();
   if (name === "jogos") renderMatches();
   if (name === "palpites") renderPalpites();

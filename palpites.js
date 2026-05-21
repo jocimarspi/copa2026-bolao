@@ -17,7 +17,7 @@ export function renderMatches() {
   sorted.forEach(m => {
     if (m.g !== lastG) {
       if (lastG !== "") html += "</div>";
-      html += '<div class="st" style="margin-top:18px">Grupo ' + m.g + '</div><div style="display:flex;flex-direction:column;gap:5px">';
+      html += '<div class="section-title" style="margin-top:18px">Grupo ' + m.g + '</div><div style="display:flex;flex-direction:column;gap:5px">';
       lastG = m.g;
     }
     const r = state.RES[m.id], done = r && r.home !== null, live = r?.live;
@@ -26,17 +26,17 @@ export function renderMatches() {
     const fh = FL(m.h), fa = FL(m.a), nh = TN(m.h), na = TN(m.a);
     let badge = "";
     if (pred) {
-      if (st === "e") badge = '<span class="pb pb-e">🎯 Placar exato</span>';
-      else if (st === "w") badge = '<span class="pb pb-w">✅ Acertou</span>';
-      else if (st === "l") badge = '<span class="pb pb-l">❌ Errou</span>';
-      else badge = '<span class="pb pb-p">⏳ ' + pred.home + '×' + pred.away + '</span>';
+      if (st === "e") badge = '<span class="bet-badge bet-badge--exact">🎯 Placar exato</span>';
+      else if (st === "w") badge = '<span class="bet-badge bet-badge--win">✅ Acertou</span>';
+      else if (st === "l") badge = '<span class="bet-badge bet-badge--loss">❌ Errou</span>';
+      else badge = '<span class="bet-badge bet-badge--pending">⏳ ' + pred.home + '×' + pred.away + '</span>';
     }
     const rodLabel = m.rod === "R1" ? "Rodada 1" : m.rod === "R2" ? "Rodada 2" : "Rodada 3";
-    html += '<div class="mc">' +
-      '<div class="mteam ml"><span class="mfl">' + fh + '</span> ' + nh + '</div>' +
-      '<div class="msc">' + (live ? '<span class="ld"></span>' : '') + hs + ' × ' + as + '</div>' +
-      '<div class="mteam mr">' + na + ' <span class="mfl">' + fa + '</span></div>' +
-      '<div class="mi">' +
+    html += '<div class="match-card">' +
+      '<div class="match-card__team match-card__team--home"><span class="match-card__flag">' + fh + '</span> ' + nh + '</div>' +
+      '<div class="match-card__score">' + (live ? '<span class="live-dot"></span>' : '') + hs + ' × ' + as + '</div>' +
+      '<div class="match-card__team match-card__team--away">' + na + ' <span class="match-card__flag">' + fa + '</span></div>' +
+      '<div class="match-card__info">' +
       '<div class="mst ' + (done && !live ? "done" : live ? "live" : "") + '">' + (live ? "🔴 AO VIVO" : done ? "✅ Encerrado" : rodLabel) + '</div>' +
       '<div>' + badge + '</div>' +
       '</div></div>';
@@ -51,10 +51,10 @@ export function cardPalpite(m) {
   const fh = FL(m.h), fa = FL(m.a), nh = TN(m.h), na = TN(m.a);
   let badge = "";
   if (pred) {
-    if (st === "e") badge = '<span class="pb pb-e">🎯 +5 pts!</span>';
-    else if (st === "w") badge = '<span class="pb pb-w">✅ +3 pts</span>';
-    else if (st === "l") badge = '<span class="pb pb-l">❌ 0 pts</span>';
-    else badge = '<span class="pb pb-p">⏳ Aguardando</span>';
+    if (st === "e") badge = '<span class="bet-badge bet-badge--exact">🎯 +5 pts!</span>';
+    else if (st === "w") badge = '<span class="bet-badge bet-badge--win">✅ +3 pts</span>';
+    else if (st === "l") badge = '<span class="bet-badge bet-badge--loss">❌ 0 pts</span>';
+    else badge = '<span class="bet-badge bet-badge--pending">⏳ Aguardando</span>';
   }
   let inp = "";
   if (done) {
@@ -63,13 +63,13 @@ export function cardPalpite(m) {
     const pv = pred ? pred.home : "", pa2 = pred ? pred.away : "";
     const btn = pred ? "✏️ Atualizar" : "💾 Salvar";
     const lks = lk ? '<span style="font-size:.65rem;color:var(--gold)">' + lk + '</span>' : "";
-    inp = '<div class="pr-row">Palpite: <input class="si2" type="number" min="0" max="20" id="ph' + m.id + '" value="' + pv + '" placeholder="0"> <span style="color:var(--muted)">×</span> <input class="si2" type="number" min="0" max="20" id="pa' + m.id + '" value="' + pa2 + '" placeholder="0"> <button class="btn btn-sm" onclick="SP(' + m.id + ')">' + btn + '</button>' + lks + '</div>';
+    inp = '<div class="score-input-row">Palpite: <input class="score-input" type="number" min="0" max="20" id="ph' + m.id + '" value="' + pv + '" placeholder="0"> <span style="color:var(--muted)">×</span> <input class="score-input" type="number" min="0" max="20" id="pa' + m.id + '" value="' + pa2 + '" placeholder="0"> <button class="btn btn--sm" onclick="SP(' + m.id + ')">' + btn + '</button>' + lks + '</div>';
   } else {
     const pp = pred ? '<div style="font-size:.7rem;color:var(--muted);margin-top:2px">Seu palpite: <strong>' + pred.home + ' × ' + pred.away + '</strong></div>' : "";
     inp = '<div style="font-size:.75rem;color:var(--red);font-weight:600">🔒 Palpite encerrado</div>' + pp;
   }
   const testBorder = m.test ? ";border-color:#6b3fa0" : "";
-  const testBadge = m.test ? '<span class="apill" style="background:#6b3fa0;font-size:.48rem;margin-left:5px">TESTE</span>' : "";
+  const testBadge = m.test ? '<span class="admin-pill" style="background:#6b3fa0;font-size:.48rem;margin-left:5px">TESTE</span>' : "";
   return '<div class="card" style="padding:13px' + testBorder + '">' +
     '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;margin-bottom:8px">' +
     '<div style="font-weight:700">' + fh + ' ' + nh + ' <span style="color:var(--muted)">×</span> ' + na + ' ' + fa + testBadge + '</div>' +
@@ -79,18 +79,18 @@ export function cardPalpite(m) {
 
 export function renderPalpites() {
   const el = $("pc"); if (!el) return;
-  if (!state.ME) { el.innerHTML = '<div class="alert ai">Entra na tua conta pra fazer palpites! <a onclick="GT(\'conta\')" style="color:var(--gold);cursor:pointer">→ Entrar</a></div>'; return; }
+  if (!state.ME) { el.innerHTML = '<div class="alert alert--info">Entra na tua conta pra fazer palpites! <a onclick="GT(\'conta\')" style="color:var(--gold);cursor:pointer">→ Entrar</a></div>'; return; }
   const p = pts(state.PRD, state.RES);
   const mxTest = [...MX].filter(m => m.test).sort((a, b) => new Date(a.ko) - new Date(b.ko));
   const mxCopa = [...MX].filter(m => !m.test).sort((a, b) => new Date(a.ko) - new Date(b.ko));
-  let html = '<div class="alert ai" style="margin-bottom:16px">Seus pontos: <strong style="color:var(--gold);font-size:1rem">' + p + ' pts</strong> — bora chutar! ⚽</div>';
+  let html = '<div class="alert alert--info" style="margin-bottom:16px">Seus pontos: <strong style="color:var(--gold);font-size:1rem">' + p + ' pts</strong> — bora chutar! ⚽</div>';
   if (mxTest.length) {
-    html += '<div class="st" style="color:#c49de8;margin-bottom:10px">🧪 Rodadas Teste <span style="font-size:.6rem;color:var(--muted);font-family:Inter,sans-serif;font-weight:400;text-transform:none;letter-spacing:0">— não contam no ranking geral</span></div>';
+    html += '<div class="section-title" style="color:#c49de8;margin-bottom:10px">🧪 Rodadas Teste <span style="font-size:.6rem;color:var(--muted);font-family:Inter,sans-serif;font-weight:400;text-transform:none;letter-spacing:0">— não contam no ranking geral</span></div>';
     html += '<div style="display:flex;flex-direction:column;gap:9px;margin-bottom:20px">';
     mxTest.forEach(m => { html += cardPalpite(m); });
     html += '</div>';
   }
-  html += '<div class="st" style="margin-bottom:10px">⚽ Copa 2026</div>';
+  html += '<div class="section-title" style="margin-bottom:10px">⚽ Copa 2026</div>';
   html += '<div style="display:flex;flex-direction:column;gap:9px">';
   mxCopa.forEach(m => { html += cardPalpite(m); });
   html += '</div>';

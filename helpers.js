@@ -48,7 +48,7 @@ export function pSt(mid, PRD, RES) {
 }
 
 export const RI = i => i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`;
-export const RC = i => i === 0 ? "g" : i === 1 ? "s" : i === 2 ? "b" : "";
+export const RC = i => i === 0 ? "leaderboard__rank--gold" : i === 1 ? "leaderboard__rank--silver" : i === 2 ? "leaderboard__rank--bronze" : "";
 
 // FLAG MAP
 export function TN(s) {
@@ -79,7 +79,7 @@ export function FL(s) {
 export function UB(k) {
   const u = UNITS[k];
   if (!u) return "";
-  return `<span class="ubadge" style="background:${u.bg};color:${u.text};border-color:${u.color}">${u.label}</span>`;
+  return `<span class="unit-badge" style="background:${u.bg};color:${u.text};border-color:${u.color}">${u.label}</span>`;
 }
 
 export const $ = id => document.getElementById(id);

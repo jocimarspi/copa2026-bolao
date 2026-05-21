@@ -14,20 +14,20 @@ export function renderAR() {
     const fh = FL(m.h), fa = FL(m.a), nh = TN(m.h), na = TN(m.a);
     const op = isOpen(m), lk = lockLbl(m);
     const sl = op ? `<span style="font-size:.62rem;color:#4ade80;font-weight:700">${lk || "Aberto"}</span>` : r && r.home !== null ? `<span style="font-size:.62rem;color:var(--muted)">✅ Encerrado</span>` : `<span style="font-size:.62rem;color:var(--red);font-weight:700">🔒 Fechado</span>`;
-    return `<div class="card" style="padding:10px;margin-bottom:6px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;font-size:.8rem;font-weight:600">${fh} ${nh} × ${na} ${fa} <span style="color:var(--muted);font-size:.7rem">${m.d}</span></span>${sl}<input class="si2" type="number" id="rh${m.id}" value="${hs}" placeholder="0" style="width:42px"><span style="color:var(--muted)">×</span><input class="si2" type="number" id="ra${m.id}" value="${as}" placeholder="0" style="width:42px"><button class="btn btn-sm" onclick="AS(${m.id})">✅ Salvar</button>${r && r.home !== null ? `<button class="btn-r" onclick="AC(${m.id})">🗑</button>` : ""}</div></div>`;
+    return `<div class="card" style="padding:10px;margin-bottom:6px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;font-size:.8rem;font-weight:600">${fh} ${nh} × ${na} ${fa} <span style="color:var(--muted);font-size:.7rem">${m.d}</span></span>${sl}<input class="score-input" type="number" id="rh${m.id}" value="${hs}" placeholder="0" style="width:42px"><span style="color:var(--muted)">×</span><input class="score-input" type="number" id="ra${m.id}" value="${as}" placeholder="0" style="width:42px"><button class="btn btn--sm" onclick="AS(${m.id})">✅ Salvar</button>${r && r.home !== null ? `<button class="btn--danger" onclick="AC(${m.id})">🗑</button>` : ""}</div></div>`;
   }).join("");
 }
 
 export function renderAL() {
   const el = $("al"); if (!el) return;
-  el.innerHTML = ADMINS.map(e => `<div class="lr" style="margin-bottom:5px"><div class="av" style="font-size:.9rem">⚙️</div><div class="ri"><div class="rn">${e}</div></div><span class="apill">ADMIN</span></div>`).join("");
+  el.innerHTML = ADMINS.map(e => `<div class="leaderboard__row" style="margin-bottom:5px"><div class="leaderboard__avatar" style="font-size:.9rem">⚙️</div><div class="leaderboard__info"><div class="leaderboard__name">${e}</div></div><span class="admin-pill">ADMIN</span></div>`).join("");
 }
 
 export function renderAS() {
   const el = $("as"); if (!el) return;
   const done = Object.values(state.RES).filter(r => r.home !== null).length;
   const un = [...new Set(state.USERS.map(u => u.unit).filter(Boolean))].length;
-  el.innerHTML = `<div class="asc"><div class="asn">${state.USERS.length}</div><div class="asl">Participantes</div></div><div class="asc"><div class="asn">${done}</div><div class="asl">Jogos encerrados</div></div><div class="asc"><div class="asn">${MX.length - done}</div><div class="asl">Jogos restantes</div></div><div class="asc"><div class="asn">${un}</div><div class="asl">Unidades ativas</div></div>`;
+  el.innerHTML = `<div class="admin-stats__item"><div class="admin-stats__number">${state.USERS.length}</div><div class="admin-stats__label">Participantes</div></div><div class="admin-stats__item"><div class="admin-stats__number">${done}</div><div class="admin-stats__label">Jogos encerrados</div></div><div class="admin-stats__item"><div class="admin-stats__number">${MX.length - done}</div><div class="admin-stats__label">Jogos restantes</div></div><div class="admin-stats__item"><div class="admin-stats__number">${un}</div><div class="admin-stats__label">Unidades ativas</div></div>`;
 }
 
 let PS = null;
@@ -64,7 +64,7 @@ window.AI = async () => {
   const link = `${location.origin}${location.pathname}?convite=${encodeURIComponent(tok)}`;
   $("ist").innerHTML = `<span style="color:#4ade80">✅ Convite gerado para ${e}</span>`;
   const box = $("ilb"); box.style.display = "block";
-  box.innerHTML = `<div style="background:#0a1a0d;border:1px solid #2d6a4f;border-radius:8px;padding:11px"><div style="font-size:.7rem;color:var(--muted);margin-bottom:6px">Copie o link e envie como preferir:</div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input readonly value="${link}" onclick="this.select()" style="flex:1;min-width:130px;background:#0f0f0f;border:1px solid var(--border);border-radius:5px;color:var(--gold);font-size:.7rem;padding:5px 8px;font-family:monospace"><button class="btn btn-sm" id="cpb" onclick="navigator.clipboard.writeText('${link}').then(()=>{document.getElementById('cpb').textContent='✅ Copiado!';setTimeout(()=>document.getElementById('cpb').textContent='📋 Copiar',2000)})">📋 Copiar</button></div></div>`;
+  box.innerHTML = `<div style="background:#0a1a0d;border:1px solid #2d6a4f;border-radius:8px;padding:11px"><div style="font-size:.7rem;color:var(--muted);margin-bottom:6px">Copie o link e envie como preferir:</div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input readonly value="${link}" onclick="this.select()" style="flex:1;min-width:130px;background:#0f0f0f;border:1px solid var(--border);border-radius:5px;color:var(--gold);font-size:.7rem;padding:5px 8px;font-family:monospace"><button class="btn btn--sm" id="cpb" onclick="navigator.clipboard.writeText('${link}').then(()=>{document.getElementById('cpb').textContent='✅ Copiado!';setTimeout(()=>document.getElementById('cpb').textContent='📋 Copiar',2000)})">📋 Copiar</button></div></div>`;
   loadINV();
 };
 
@@ -80,7 +80,7 @@ export function renderINV() {
   const jd = new Set(state.USERS.map(u => (u.email || "").toLowerCase()));
   el.innerHTML = [...state.INVS].sort((a, b) => (b.invitedAt?.seconds || 0) - (a.invitedAt?.seconds || 0)).map(inv => {
     const ok = jd.has(inv.email);
-    return `<div class="ir"><div style="font-size:1rem">${ok ? "✅" : "📧"}</div><div class="ie">${inv.email}</div><span class="is ${ok ? "ij" : "ip"}">${ok ? "Entrou" : "Pendente"}</span>${!ok ? `<button class="btn-r" onclick="RI('${inv.email}')">Revogar</button>` : ""}</div>`;
+    return `<div class="invite-row"><div style="font-size:1rem">${ok ? "✅" : "📧"}</div><div class="invite-row__email">${inv.email}</div><span class="is ${ok ? "ij" : "ip"}">${ok ? "Entrou" : "Pendente"}</span>${!ok ? `<button class="btn--danger" onclick="RI('${inv.email}')">Revogar</button>` : ""}</div>`;
   }).join("");
 }
 
@@ -112,11 +112,11 @@ function renderMMA() {
     for (let i = 0; i < f.n; i++) {
       const j = jogos[i] || { h: "", a: "", gh: null, ga: null };
       html += '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:5px">' +
-        '<input class="si2" style="width:130px;text-align:left;padding:4px 8px" placeholder="Time casa" id="mm_' + f.key + '_h' + i + '" value="' + (j.h || '') + '">' +
-        '<input class="si2" style="width:42px" placeholder="0" id="mm_' + f.key + '_gh' + i + '" value="' + (j.gh !== null ? j.gh : '') + '">' +
+        '<input class="score-input" style="width:130px;text-align:left;padding:4px 8px" placeholder="Time casa" id="mm_' + f.key + '_h' + i + '" value="' + (j.h || '') + '">' +
+        '<input class="score-input" style="width:42px" placeholder="0" id="mm_' + f.key + '_gh' + i + '" value="' + (j.gh !== null ? j.gh : '') + '">' +
         '<span style="color:var(--muted)">×</span>' +
-        '<input class="si2" style="width:42px" placeholder="0" id="mm_' + f.key + '_ga' + i + '" value="' + (j.ga !== null ? j.ga : '') + '">' +
-        '<input class="si2" style="width:130px;text-align:left;padding:4px 8px" placeholder="Time visitante" id="mm_' + f.key + '_a' + i + '" value="' + (j.a || '') + '">' +
+        '<input class="score-input" style="width:42px" placeholder="0" id="mm_' + f.key + '_ga' + i + '" value="' + (j.ga !== null ? j.ga : '') + '">' +
+        '<input class="score-input" style="width:130px;text-align:left;padding:4px 8px" placeholder="Time visitante" id="mm_' + f.key + '_a' + i + '" value="' + (j.a || '') + '">' +
         '</div>';
     }
     html += '</div>';

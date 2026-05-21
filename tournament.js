@@ -27,11 +27,11 @@ export function calcGrupo(g) {
 export function renderGrupos() {
   const el = $("t-grupos"); if (!el) return;
   const grps = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
-  let html = '<div class="gg">';
+  let html = '<div class="groups-grid">';
   grps.forEach(g => {
     const tab = calcGrupo(g);
-    html += '<div class="card" style="padding:10px 8px"><div class="gl">GRUPO ' + g + '</div>';
-    html += '<table class="gt"><thead><tr><th>Seleção</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th><th>Pts</th></tr></thead><tbody>';
+    html += '<div class="card" style="padding:10px 8px"><div class="group-table__label">GRUPO ' + g + '</div>';
+    html += '<table class="group-table"><thead><tr><th>Seleção</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th><th>Pts</th></tr></thead><tbody>';
     tab.forEach((t, i) => {
       const cls = i < 2 ? 'style="color:#4ade80"' : i === 2 ? 'style="color:var(--gold)"' : '';
       const nm = TN(t.t), fl = FL(t.t);
@@ -56,17 +56,17 @@ export function renderMM() {
     fases.forEach(fase => {
       const jogos = mm[fase] || [];
       const total = slots[fase] / 2;
-      html += '<div class="st" style="margin-top:20px">' + nomes[fase] + '</div>';
+      html += '<div class="section-title" style="margin-top:20px">' + nomes[fase] + '</div>';
       html += '<div style="display:flex;flex-direction:column;gap:6px">';
       for (let i = 0; i < total; i++) {
         const jogo = jogos[i] || { h: "A definir", a: "A definir", gh: null, ga: null };
         const done = jogo.gh !== null && jogo.ga !== null;
         const sc = done ? jogo.gh + ' × ' + jogo.ga : '× ';
-        html += '<div class="mc">' +
-          '<div class="mteam ml">' + jogo.h + '</div>' +
-          '<div class="msc" style="font-size:.9rem;min-width:50px">' + sc + '</div>' +
-          '<div class="mteam mr">' + jogo.a + '</div>' +
-          '<div class="mi"><div class="mst ' + (done ? "done" : "") + '">' +
+        html += '<div class="match-card">' +
+          '<div class="match-card__team match-card__team--home">' + jogo.h + '</div>' +
+          '<div class="match-card__score" style="font-size:.9rem;min-width:50px">' + sc + '</div>' +
+          '<div class="match-card__team match-card__team--away">' + jogo.a + '</div>' +
+          '<div class="match-card__info"><div class="mst ' + (done ? "done" : "") + '">' +
           (done ? "✅ Encerrado" : "A definir") + '</div></div></div>';
       }
       html += '</div>';
@@ -77,17 +77,17 @@ export function renderMM() {
 
 export function renderTorneio() {
   renderGrupos();
-  $("t-grupos")?.classList.add("on");
-  $("t-matamata")?.classList.remove("on");
-  document.querySelectorAll("#tab-torneio .fcat")[0]?.classList.add("on");
-  document.querySelectorAll("#tab-torneio .fcat")[1]?.classList.remove("on");
+  $("t-grupos")?.classList.add("is-active");
+  $("t-matamata")?.classList.remove("is-active");
+  document.querySelectorAll("#tab-torneio .fcat")[0]?.classList.add("is-active");
+  document.querySelectorAll("#tab-torneio .fcat")[1]?.classList.remove("is-active");
 }
 
 window.showTorneio = function (sec, btn) {
-  document.querySelectorAll(".ts").forEach(s => s.classList.remove("on"));
-  document.querySelectorAll("#tab-torneio .fcat").forEach(b => b.classList.remove("on"));
-  $("t-" + sec)?.classList.add("on");
-  if (btn) btn.classList.add("on");
+  document.querySelectorAll(".tournament-section").forEach(s => s.classList.remove("is-active"));
+  document.querySelectorAll("#tab-torneio .fcat").forEach(b => b.classList.remove("is-active"));
+  $("t-" + sec)?.classList.add("is-active");
+  if (btn) btn.classList.add("is-active");
   if (sec === "grupos") renderGrupos();
   if (sec === "matamata") renderMM();
 };

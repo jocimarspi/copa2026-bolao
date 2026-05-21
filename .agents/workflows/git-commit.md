@@ -1,7 +1,4 @@
 ---
-title: Commit Padronizado
-command: git-commit
-type: workflow
 description: Workflow para realizar commits seguindo o padrão Conventional Commits do projeto Bolão Copa 2026.
 ---
 
@@ -24,3 +21,5 @@ Ao ser acionado com o comando `/git-commit`, siga rigorosamente esta sequência:
 
 ## 🎯 Objetivo
 Garantir que todas as alterações no ecossistema Bolão Copa 2026 possuam um histórico rastreável, profissional e compatível com ferramentas de automação.
+
+> SEMPRE EM INGLÊS A MENSAGEM.
