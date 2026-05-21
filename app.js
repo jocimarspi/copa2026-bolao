@@ -12,6 +12,7 @@ import { initPalpites, renderMatches, renderPalpites } from "./palpites.js";
 import { initTournament, renderTorneio, renderGrupos } from "./tournament.js";
 import { initAdmin, renderAR, renderAL, renderAS, loadMM } from "./admin.js";
 import { UH, renderConta, renderLogin, SM, renderJanela, renderHistorico } from "./ui.js";
+import { applyTranslations } from "./i18n.js";
 
 // ── Firebase ──────────────────────────────────────────────────────────────────
 const FB = {
@@ -115,6 +116,7 @@ window.GT = function (name) {
 window.UH = UH;
 
 // ── Init ──────────────────────────────────────────────────────────────────────
+applyTranslations();
 renderUnitFilters();
 renderMatches();
 renderJanela();

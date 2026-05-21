@@ -1,6 +1,8 @@
 import { MX } from "./matches.js";
 import { UNITS } from "./units.js";
 
+import { getTranslation } from "./i18n.js";
+
 // SCORING
 export const sgn = n => n > 0 ? 1 : n < 0 ? -1 : 0;
 
@@ -33,9 +35,9 @@ export function lockLbl(m) {
   const d = new Date(m.ko).getTime() - 300000 - Date.now();
   if (d <= 0) return null;
   const h = Math.floor(d / 3600000), mn = Math.floor((d % 3600000) / 60000);
-  if (h > 24) return `Fecha em ${Math.floor(d / 86400000)}d`;
+  if (h > 24) return `${getTranslation("helper_closes_in")}${Math.floor(d / 86400000)}d`;
   if (h > 0) return `⚠️ ${h}h ${mn}min`;
-  return mn > 0 ? `⚠️ ${mn}min!` : "⚠️ Fechando!";
+  return mn > 0 ? `⚠️ ${mn}min!` : getTranslation("helper_closing");
 }
 
 export function pSt(mid, PRD, RES) {
