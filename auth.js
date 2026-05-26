@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { ADMINS } from "./admins.js";
 import { UNITS } from "./units.js";
@@ -56,4 +56,46 @@ window.doLogout = async () => {
   state.PRD = {};
   state.MU = "";
   window.GT("ranking");
+};
+
+window.doSSOLogin = async () => {
+  SA("", "");
+  const provider = new OAuthProvider('microsoft.com');
+  provider.setCustomParameters({
+    tenant: 'ea47001a-3428-40f3-8ea1-86bdb1a3bc84',
+    prompt: 'select_account'
+  });
+  try {
+    await signInWithPopup(auth, provider);
+    window.GT("ranking");
+  } catch (err) {
+    console.error(err);
+    if (err.code === "auth/popup-closed-by-user") {
+      SA("Login cancelado 🧭", "ae");
+    } else {
+      SA("Erro no SSO: " + err.message, "ae");
+    }
+  }
+};
+
+window.doCompleteProfile = async () => {
+  const n = $("cp-name")?.value.trim();
+  const un = $("cp-unit")?.value;
+  const em = $("cp-emoji")?.value;
+  SA("", "");
+  if (!n || !un) {
+    SA("Preencha o nome e selecione a unidade!", "ae");
+    return;
+  }
+  try {
+    const user = auth.currentUser;
+    if (!user) return;
+    const m = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    await m.updateProfile(user, { displayName: n, photoURL: em || "⚽" });
+    await setDoc(doc(db, "users", user.uid), { name: n, emoji: em || "⚽", unit: un, pts: 0 }, { merge: true });
+    state.MU = un;
+    window.GT("ranking");
+  } catch (err) {
+    SA(err.message, "ae");
+  }
 };
