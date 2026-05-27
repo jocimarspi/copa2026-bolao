@@ -95,6 +95,18 @@ nav { display:flex; gap:3px; flex-wrap:wrap; flex:1; }
   background:#111; border:1px solid var(--gold); color:var(--gold);
   border-radius:99px; padding:4px 12px; font-weight:700; font-size:.73rem; cursor:pointer;
 }
+.header__user-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+.header__user-block .unit-badge {
+  font-size: .52rem;
+  padding: 1px 6px;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
 .points-tag {
   background:var(--gold); color:#000; border-radius:99px; padding:4px 12px;
   font-family:'Unbounded',sans-serif; font-size:.76rem; font-weight:900;

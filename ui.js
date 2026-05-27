@@ -14,7 +14,7 @@ export function UH() {
     const p = pts(state.PRD, state.RES);
     const pill = adm ? `<span class="admin-pill">ADMIN</span>` : "";
     const ub = UB(state.MU);
-    el.innerHTML = `<span class="user-tag" onclick="GT('conta')">${state.ME.photoURL || "⚽"} ${state.ME.displayName || getTranslation("user_you")}${pill}</span>${ub}<span class="points-tag">${p} pts</span>`;
+    el.innerHTML = `<div class="header__user-block"><span class="user-tag" onclick="GT('conta')">${state.ME.photoURL || "⚽"} ${state.ME.displayName || getTranslation("user_you")}${pill}</span>${ub}</div><span class="points-tag">${p} pts</span>`;
     if (adm) { renderAR(); renderAL(); renderAS(); }
   } else { el.innerHTML = `<button class="btn btn--sm" onclick="GT('conta')">${getTranslation("btn_login")}</button>`; }
 }
