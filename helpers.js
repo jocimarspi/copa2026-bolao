@@ -87,10 +87,21 @@ export function UB(k) {
 export function fmtDT(ko) {
   const d = new Date(ko);
   if (isNaN(d.getTime())) return { d: "", t: "" };
-  const pad = n => String(n).padStart(2, "0");
-  const dateStr = `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
-  const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  return { d: dateStr, t: timeStr };
+
+  const locale = navigator.language || "pt-BR";
+
+  const dateStr = d.toLocaleDateString(locale, { day: "2-digit", month: "2-digit" });
+  const timeStr = d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", hour12: false });
+
+  // Append short timezone abbreviation so the user knows which timezone is displayed
+  let tzLabel = "";
+  try {
+    const parts = new Intl.DateTimeFormat(locale, { timeZoneName: "short" }).formatToParts(d);
+    const tzPart = parts.find(p => p.type === "timeZoneName");
+    if (tzPart) tzLabel = ` (${tzPart.value})`;
+  } catch (_) { /* ignore if not supported */ }
+
+  return { d: dateStr, t: timeStr + tzLabel };
 }
 
 export const $ = id => document.getElementById(id);
