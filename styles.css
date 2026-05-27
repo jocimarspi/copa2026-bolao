@@ -33,6 +33,7 @@ header { background:#000; border-bottom:2px solid var(--gold); position:sticky; 
 .header__logo {
   font-family:'Unbounded',sans-serif; font-weight:900; font-size:1rem;
   color:#fff; letter-spacing:-.3px; line-height:1.1; white-space:nowrap;
+  margin-right: auto;
 }
 .header__logo span { color:var(--gold); }
 .header__logo small {
@@ -157,7 +158,11 @@ nav { display:flex; gap:3px; flex-wrap:wrap; flex:1; }
 }
 
 /* ══════════════ USER AREA ══════════════ */
-#us { margin-left:auto; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+#us { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+#us.is-logged-in {
+  order: -1;
+  margin-right: 10px;
+}
 
 /* ══════════════ LANG SWITCHER ══════════════ */
 #lang-switcher {
@@ -178,25 +183,26 @@ nav { display:flex; gap:3px; flex-wrap:wrap; flex:1; }
   background: #222;
 }
 
-.user-tag {
-  background:#111; border:1px solid var(--gold); color:var(--gold);
-  border-radius:99px; padding:4px 12px; font-weight:700; font-size:.73rem; cursor:pointer;
-}
-.header__user-block {
+.header__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #000;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 3px;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 900;
+  cursor: pointer;
+  border: 1px solid var(--gold);
+  transition: all 0.2s ease;
+  user-select: none;
 }
-.header__user-block .unit-badge {
-  font-size: .52rem;
-  padding: 1px 6px;
-  font-weight: 600;
-  letter-spacing: .2px;
-}
-.points-tag {
-  background:var(--gold); color:#000; border-radius:99px; padding:4px 12px;
-  font-family:'Unbounded',sans-serif; font-size:.76rem; font-weight:900;
+.header__avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(241, 196, 15, 0.4);
 }
 .admin-pill {
   background:var(--gold); color:#000; font-family:'Unbounded',sans-serif;

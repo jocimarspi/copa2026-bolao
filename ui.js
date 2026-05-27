@@ -5,6 +5,23 @@ import { isAdm } from "./auth.js";
 import { renderAR, renderAL, renderAS } from "./admin.js";
 import { getTranslation } from "./i18n.js";
 
+function getInitials(name, email) {
+  let nameToUse = name;
+  if (!nameToUse && email) {
+    nameToUse = email.split('@')[0].replace(/\./g, ' ');
+  }
+  if (!nameToUse) return "⚽";
+  const parts = nameToUse.trim().split(/\s+/);
+  if (parts.length === 0) return "⚽";
+  if (parts.length === 1) {
+    const single = parts[0];
+    return single.length >= 2 ? (single[0] + single[1]).toUpperCase() : single.toUpperCase();
+  }
+  const first = parts[0][0] || "";
+  const last = parts[parts.length - 1][0] || "";
+  return (first + last).toUpperCase();
+}
+
 // HEADER
 export function UH() {
   const el = $("us"), btn = $("nav-adm"), dBtn = $("drawer-nav-adm");
@@ -12,12 +29,14 @@ export function UH() {
   if (btn) { btn.classList.toggle("is-visible", adm); }
   if (dBtn) { dBtn.classList.toggle("is-visible", adm); }
   if (state.ME) {
-    const p = pts(state.PRD, state.RES);
-    const pill = adm ? `<span class="admin-pill">ADMIN</span>` : "";
-    const ub = UB(state.MU);
-    el.innerHTML = `<div class="header__user-block"><span class="user-tag" onclick="GT('conta')">${state.ME.photoURL || "⚽"} ${state.ME.displayName || getTranslation("user_you")}${pill}</span>${ub}</div><span class="points-tag">${p} pts</span>`;
+    el.classList.add("is-logged-in");
+    const initials = getInitials(state.ME.displayName, state.ME.email);
+    el.innerHTML = `<div class="header__avatar" onclick="GT('conta')">${initials}</div>`;
     if (adm) { renderAR(); renderAL(); renderAS(); }
-  } else { el.innerHTML = `<button class="btn btn--sm" onclick="GT('conta')">${getTranslation("btn_login")}</button>`; }
+  } else {
+    el.classList.remove("is-logged-in");
+    el.innerHTML = `<button class="btn btn--sm" onclick="GT('conta')">${getTranslation("btn_login")}</button>`;
+  }
 }
 
 // CONTA
