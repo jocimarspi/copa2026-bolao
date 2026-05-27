@@ -9,6 +9,62 @@ let currentFilter = "todos";
 
 export function initPalpites(dbInstance) {
   db = dbInstance;
+  initTouchTooltip();
+}
+
+function initTouchTooltip() {
+  // Cria o elemento de tooltip uma única vez
+  const tip = document.createElement('div');
+  tip.className = 'tooltip-popup';
+  tip.id = 'touch-tooltip';
+  document.body.appendChild(tip);
+
+  let hideTimer = null;
+
+  function showTip(text, x, y) {
+    clearTimeout(hideTimer);
+    tip.textContent = text;
+    // Posiciona acima do ponto de toque/hover (centralizado)
+    tip.style.left = Math.max(8, x - 60) + 'px';
+    tip.style.top = (y - 42) + 'px';
+    tip.classList.add('is-visible');
+  }
+
+  function hideTip(delay = 0) {
+    clearTimeout(hideTimer);
+    if (delay) {
+      hideTimer = setTimeout(() => tip.classList.remove('is-visible'), delay);
+    } else {
+      tip.classList.remove('is-visible');
+    }
+  }
+
+  // Touch (mobile)
+  document.addEventListener('touchstart', (e) => {
+    const el = e.target.closest('.match-card__name');
+    if (el && el.title) {
+      const touch = e.touches[0];
+      showTip(el.title, touch.clientX, touch.clientY);
+      hideTip(2500);
+    } else {
+      hideTip();
+    }
+  }, { passive: true });
+
+  // Hover (desktop)
+  document.addEventListener('mouseover', (e) => {
+    const el = e.target.closest('.match-card__name');
+    if (el && el.title) {
+      const rect = el.getBoundingClientRect();
+      showTip(el.title, rect.left + rect.width / 2, rect.top);
+    }
+  });
+
+  document.addEventListener('mouseout', (e) => {
+    if (e.target.closest('.match-card__name')) {
+      hideTip();
+    }
+  });
 }
 
 export function cardUnifiedMatch(m) {
@@ -98,15 +154,15 @@ export function cardUnifiedMatch(m) {
       </div>
       <div class="match-card__main">
         <div class="match-card__team match-card__team--home">
+          <span class="match-card__name" title="${nh}">${nh}</span>
           <span class="match-card__flag">${fh}</span>
-          <span class="match-card__name">${nh}</span>
         </div>
         <div class="match-card__vs">
           ${scoreHtml}
         </div>
         <div class="match-card__team match-card__team--away">
-          <span class="match-card__name">${na}</span>
           <span class="match-card__flag">${fa}</span>
+          <span class="match-card__name" title="${na}">${na}</span>
         </div>
       </div>
       <div class="match-card__prediction">
