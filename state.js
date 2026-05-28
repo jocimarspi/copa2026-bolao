@@ -12,6 +12,13 @@ export const state = {
   MX: [], // Coleção de partidas dinâmica vinda do Firestore
 };
 
+/**
+ * UNITS — mapa dinâmico de unidades de negócio carregado do Firestore (businessUnits).
+ * Objeto mutável compartilhado: não depende mais do arquivo estático units.js.
+ * Populado pelo listener em app.js quando a coleção businessUnits é carregada.
+ */
+export const UNITS = {};
+
 export const DEFAULT_MATCHES = [
   {id:1,g:"A",rod:"R1",h:"mexico",a:"south_africa",ko:"2026-06-11T19:00:00Z"},
   {id:2,g:"A",rod:"R1",h:"south_korea",a:"czech_rep",ko:"2026-06-12T02:00:00Z"},

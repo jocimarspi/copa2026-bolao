@@ -2,14 +2,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, getDocs, collection, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-import { $ } from "./helpers.js";
-import { state, DEFAULT_MATCHES } from "./state.js";
+import { $, getEcosystemStyles } from "./helpers.js";
+import { state, DEFAULT_MATCHES, UNITS } from "./state.js";
 import { initAuth, isAdm } from "./auth.js";
 import { fetchAPI } from "./api.js";
 import { renderLB, renderUnitFilters } from "./leaderboard.js";
 import { initPalpites, renderMatches, renderPalpites } from "./palpites.js";
 import { initTournament, renderTorneio, renderGrupos } from "./tournament.js";
-import { initAdmin, renderAR, renderAL, renderAS, loadMM, renderAM, loadApiUrl } from "./admin.js";
+import { initAdmin, renderAR, renderAL, renderAS, loadMM, renderAM, loadApiUrl, renderBusinessUnitsList } from "./admin.js";
 import { UH, renderConta, renderLogin, SM, renderJanela, renderHistorico } from "./ui.js";
 import { applyTranslations } from "./i18n.js";
 
@@ -36,12 +36,13 @@ initTournament(db);
 initAdmin(db);
 
 // ── Firestore Listeners ───────────────────────────────────────────────────────
-let unsubResults = null, unsubUsers = null, unsubMatches = null;
+let unsubResults = null, unsubUsers = null, unsubMatches = null, unsubBusinessUnits = null;
 
 function startListeners() {
   if (unsubResults) unsubResults();
   if (unsubUsers) unsubUsers();
   if (unsubMatches) unsubMatches();
+  if (unsubBusinessUnits) unsubBusinessUnits();
 
   unsubMatches = onSnapshot(collection(db, "matches"), snap => {
     const loadedMatches = [];
@@ -115,12 +116,49 @@ function startListeners() {
     renderLB();
     if (state.ME && isAdm(state.ME.email)) renderAS();
   }, err => console.warn("Erro listener users:", err));
+
+  unsubBusinessUnits = onSnapshot(collection(db, "businessUnits"), snap => {
+    const loadedUnits = {};
+    snap.forEach(d => {
+      loadedUnits[d.id] = d.data();
+    });
+
+    // Coleção vazia: não faz nada (seed é feito via botão no painel admin)
+    if (Object.keys(loadedUnits).length === 0) return;
+
+    // Substitui UNITS mantendo a mesma referência de objeto (módulos já importaram)
+    for (const key in UNITS) {
+      delete UNITS[key];
+    }
+    for (const [id, bu] of Object.entries(loadedUnits)) {
+      const styles = getEcosystemStyles(bu.ecossistema);
+      UNITS[id] = {
+        label: bu.nome,              // só o nome, sem repetir o ecossistema
+        eco: bu.ecossistema,         // ecossistema separado para exibição contextual
+        color: styles.color,
+        bg: styles.bg,
+        text: styles.text,
+        cls: `unit-filters__btn--${id}`,
+        nome: bu.nome,
+        ecossistema: bu.ecossistema
+      };
+    }
+
+    renderUnitFilters();
+    renderLB();
+    renderConta();
+    if (state.ME && isAdm(state.ME.email)) {
+      renderAS();
+      renderBusinessUnitsList();
+    }
+  }, err => console.warn("Erro listener businessUnits:", err));
 }
 
 function stopListeners() {
   if (unsubResults) { unsubResults(); unsubResults = null; }
   if (unsubUsers) { unsubUsers(); unsubUsers = null; }
   if (unsubMatches) { unsubMatches(); unsubMatches = null; }
+  if (unsubBusinessUnits) { unsubBusinessUnits(); unsubBusinessUnits = null; }
   state.RES = {};
   state.USERS = [];
   renderMatches();
@@ -194,6 +232,7 @@ window.GT = function (name) {
     loadMM();
     renderAM();
     loadApiUrl();
+    renderBusinessUnitsList();
   }
   if (name === "historico") renderHistorico();
 };

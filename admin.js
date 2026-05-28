@@ -1,7 +1,7 @@
 import { doc, setDoc, getDoc, getDocs, collection, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { ADMINS } from "./admins.js";
 import { $, TN, FL, isOpen, lockLbl, pts, fmtDT, parseKoDate } from "./helpers.js";
-import { state } from "./state.js";
+import { state, UNITS } from "./state.js";
 import { getTranslation } from "./i18n.js";
 import { recalculateStandings } from "./api.js";
 
@@ -371,4 +371,166 @@ window.importMatchesFromAPI = async () => {
       alert("Erro ao importar partidas: " + e.message);
     }
   });
+};
+
+// GERENCIAMENTO DE UNIDADES DE NEGÓCIO
+export function renderBusinessUnitsList() {
+  const el = $("admin-bu-list"); if (!el) return;
+  const list = Object.entries(UNITS).sort((a, b) => a[1].label.localeCompare(b[1].label));
+  el.innerHTML = list.map(([id, u]) => {
+    return `
+      <div class="card" style="padding:10px;margin-bottom:6px;background:rgba(255,255,255,0.01)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:240px">
+            <span class="unit-badge" style="background:${u.bg};color:${u.text};border-color:${u.color}">${u.label}</span>
+            <span style="font-size:0.7rem;color:var(--muted)">ID: ${id}</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;width:80px;flex-shrink:0">
+            <button class="btn btn--sm btn--outline" style="width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:0.8rem;border-radius:4px;border-color:var(--border)" onclick="showBUForm('${id}')" title="Editar">✏️</button>
+            <button class="btn--danger" style="width:30px;height:30px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:0.8rem;border-radius:4px" onclick="deleteBU('${id}')" title="Remover">🗑</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+window.showBUForm = (id) => {
+  const container = $("bu-form-container");
+  if (!container) return;
+
+  if (id) {
+    const u = UNITS[id];
+    if (!u) return;
+    $("bu-form-title").innerText = "Editar Unidade: " + id;
+    $("buf-id").value = id;
+    $("buf-nome").value = u.nome || "";
+    $("buf-ecossistema").value = u.ecossistema || "DIGITAL TRANSFORMATION";
+  } else {
+    $("bu-form-title").innerText = "Adicionar Unidade";
+    $("buf-id").value = "";
+    $("buf-nome").value = "";
+    $("buf-ecossistema").value = "DIGITAL TRANSFORMATION";
+  }
+  container.style.display = "block";
+};
+
+window.hideBUForm = () => {
+  const container = $("bu-form-container");
+  if (container) container.style.display = "none";
+};
+
+window.saveBU = async () => {
+  const id = $("buf-id").value;
+  const nome = $("buf-nome").value.trim();
+  const ecossistema = $("buf-ecossistema").value;
+
+  if (!nome) { alert("Preencha o nome da unidade!"); return; }
+
+  const docId = id || slugify(nome);
+
+  try {
+    await setDoc(doc(db, "businessUnits", docId), {
+      nome,
+      ecossistema
+    });
+    window.hideBUForm();
+    window.SM("Unidade de negócio salva com sucesso!", null);
+  } catch (e) {
+    alert("Erro ao salvar unidade: " + e.message);
+  }
+};
+
+window.deleteBU = async (id) => {
+  const u = UNITS[id];
+  window.SM(`Deseja realmente remover a unidade "${u?.label || id}"? Esta ação não pode ser desfeita e afetará usuários que pertencem a ela.`, async () => {
+    try {
+      await deleteDoc(doc(db, "businessUnits", id));
+      window.SM("Unidade de negócio removida com sucesso!", null);
+    } catch (e) {
+      alert("Erro ao deletar unidade: " + e.message);
+    }
+  });
+};
+
+const DEFAULT_BUSINESS_UNITS = [
+  // ── Unidades oficiais (CSV) ───────────────────────────────────────────────
+  { id: "dt_db1_global_it_services",  nome: "DT - DB1 GLOBAL (IT SERVICES)",  ecossistema: "DIGITAL TRANSFORMATION" },
+  { id: "dt_dgs_lughy",               nome: "DT - DGS - LUGHY",               ecossistema: "DIGITAL TRANSFORMATION" },
+  { id: "ec_anymarket",               nome: "EC - ANYMARKET",                  ecossistema: "E-COMMERCE" },
+  { id: "ec_anymarket_marca_seleta",  nome: "EC - ANYMARKET - MARCA SELETA",  ecossistema: "E-COMMERCE" },
+  { id: "ec_anytools_chile",          nome: "EC - ANYTOOLS - CHILE",           ecossistema: "E-COMMERCE" },
+  { id: "ec_anytools_latam",          nome: "EC - ANYTOOLS - LATAM",           ecossistema: "E-COMMERCE" },
+  { id: "ec_anytools_mexico",         nome: "EC - ANYTOOLS - MEXICO",          ecossistema: "E-COMMERCE" },
+  { id: "ec_koncili",                 nome: "EC - KONCILI",                    ecossistema: "E-COMMERCE" },
+  { id: "ec_predize",                 nome: "EC - PREDIZE",                    ecossistema: "E-COMMERCE" },
+  { id: "ec_winnerbox",               nome: "EC - WINNERBOX",                  ecossistema: "E-COMMERCE" },
+  { id: "holding",                    nome: "HOLDING",                         ecossistema: "HOLDING" },
+  { id: "tf_consignet",               nome: "TF - CONSIGNET",                  ecossistema: "TECHFIN" },
+  { id: "tf_ducz",                    nome: "TF - DUCZ",                       ecossistema: "TECHFIN" },
+  { id: "tf_flinke",                  nome: "TF - FLINKE",                     ecossistema: "TECHFIN" },
+  { id: "tf_mixtra",                  nome: "TF - MIXTRA",                     ecossistema: "TECHFIN" },
+  { id: "db1_labs",                   nome: "DB1 LABS",                        ecossistema: "DB1 LABS" },
+  { id: "ct_arvia",                   nome: "CT - ARVIA",                      ecossistema: "CHRISTIAN TECH" },
+  { id: "ct_mykids",                  nome: "CT - MYKIDS",                     ecossistema: "CHRISTIAN TECH" },
+  { id: "ct_voluts",                  nome: "CT - VOLUTS",                     ecossistema: "CHRISTIAN TECH" },
+  // ── Unidades legadas (existiam no units.js — mantidas para compatibilidade) ─
+  { id: "anytools_mexico",            nome: "ANYTOOLS - MEXICO",               ecossistema: "E-COMMERCE" },
+  { id: "arvia",                      nome: "ARVIA",                           ecossistema: "CHRISTIAN TECH" },
+  { id: "consignet",                  nome: "CONSIGNET",                       ecossistema: "TECHFIN" },
+  { id: "db1_global_it_services",     nome: "DB1 GLOBAL (IT SERVICES)",        ecossistema: "DIGITAL TRANSFORMATION" },
+  { id: "db1_labs_2",                 nome: "DB1 LABS 2",                      ecossistema: "DB1 LABS" },
+  { id: "dgs_lughy",                  nome: "DGS - LUGHY",                     ecossistema: "DIGITAL TRANSFORMATION" },
+  { id: "ducz",                       nome: "DUCZ",                            ecossistema: "TECHFIN" },
+  { id: "ducz_suporte",               nome: "DUCZ SUPORTE",                    ecossistema: "TECHFIN" },
+  { id: "flinke",                     nome: "FLINKE",                          ecossistema: "TECHFIN" },
+  { id: "ge_domus",                   nome: "GE - DOMUS",                      ecossistema: "OTHERS" },
+  { id: "holding_shared_services",    nome: "HOLDING - SHARED SERVICES",       ecossistema: "HOLDING" },
+  { id: "holding_inv",                nome: "HOLDING INV",                     ecossistema: "HOLDING" },
+  { id: "holding_nop",                nome: "HOLDING NOP",                     ecossistema: "HOLDING" },
+  { id: "holding_shs",                nome: "HOLDING SHS",                     ecossistema: "HOLDING" },
+  { id: "inovacao",                   nome: "INOVAÇÃO",                        ecossistema: "DB1 LABS" },
+  { id: "koncili",                    nome: "KONCILI",                         ecossistema: "E-COMMERCE" },
+  { id: "mixtra",                     nome: "MIXTRA",                          ecossistema: "TECHFIN" },
+  { id: "mixtra_legado",              nome: "MIXTRA LEGADO",                   ecossistema: "TECHFIN" },
+  { id: "mixtra_money",               nome: "MIXTRA MONEY",                    ecossistema: "TECHFIN" },
+  { id: "moda_db1",                   nome: "MODA DB1",                        ecossistema: "OTHERS" },
+  { id: "mykids",                     nome: "MYKIDS",                          ecossistema: "CHRISTIAN TECH" },
+  { id: "participacoes",              nome: "PARTICIPAÇÕES",                   ecossistema: "OTHERS" },
+  { id: "predize",                    nome: "PREDIZE",                         ecossistema: "E-COMMERCE" },
+  { id: "rds_investimentos",          nome: "RDS INVESTIMENTOS",               ecossistema: "DB1 LABS" },
+  { id: "sh_desp_financeiras",        nome: "SH - DESP FINANCEIRAS",           ecossistema: "HOLDING" },
+  { id: "sh_marketing",               nome: "SH - MARKETING",                  ecossistema: "HOLDING" },
+  { id: "tinbot",                     nome: "TINBOT",                          ecossistema: "DB1 LABS" },
+  { id: "voluts",                     nome: "VOLUTS",                          ecossistema: "CHRISTIAN TECH" },
+  { id: "winnerbox",                  nome: "WINNERBOX",                       ecossistema: "E-COMMERCE" },
+];
+
+window.seedDefaultBusinessUnits = () => {
+  window.SM(
+    `Deseja popular a coleção <strong>businessUnits</strong> com as <strong>${DEFAULT_BUSINESS_UNITS.length} unidades padrão</strong>?<br><br><span style="font-size:.75rem;color:var(--muted)">Documentos existentes com o mesmo ID serão substituídos.</span>`,
+    async () => {
+      try {
+        for (const bu of DEFAULT_BUSINESS_UNITS) {
+          await setDoc(doc(db, "businessUnits", bu.id), {
+            nome: bu.nome,
+            ecossistema: bu.ecossistema,
+          });
+        }
+        window.SM(`✅ ${DEFAULT_BUSINESS_UNITS.length} unidades populadas com sucesso!`, null);
+      } catch (e) {
+        alert("Erro ao popular unidades: " + e.message);
+      }
+    }
+  );
 };
