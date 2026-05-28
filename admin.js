@@ -122,32 +122,48 @@ export function renderAM() {
     const scoreDefined = r && r.home !== null;
     return `
       <div class="card" style="padding:10px;margin-bottom:6px;background:rgba(255,255,255,0.01)">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-          <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:200px">
-            <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;font-weight:600;flex-wrap:wrap">
-              <span>${m.id}.</span>
-              <span>${fh} ${nh} × ${na} ${fa}</span>
-              ${badge}
-              ${sl}
-            </div>
-            <div style="color:var(--muted);font-size:0.7rem">
-              ${fmtDT(m.ko).d} · ${fmtDT(m.ko).t} · ${m.rod}
-            </div>
+        <!-- Metadata Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.03);padding-bottom:4px">
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--muted)">
+            <strong style="color:var(--text)">#${m.id}</strong>
+            <span>·</span>
+            <span>${fmtDT(m.ko).d} · ${fmtDT(m.ko).t} · ${m.rod}</span>
+            <span>·</span>
+            ${badge}
           </div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div>
+            ${sl}
+          </div>
+        </div>
+        
+        <!-- Main Row: Teams & Actions -->
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <!-- Left/Center: Teams, Flags & Score -->
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;flex:1;min-width:280px;font-size:0.85rem">
             ${scoreDefined ? `
-              <span style="font-size:0.85rem;font-weight:700;color:var(--gold);margin-right:8px">${hs} × ${as}</span>
-              <button class="btn--danger" style="padding:4px 8px;border-radius:4px" onclick="AC(${m.id})" title="${getTranslation("adm_clear_score")}">✕</button>
-              <span style="color:var(--border);margin:0 4px">|</span>
-              <button class="btn btn--sm" style="padding:4px 8px" onclick="showMatchForm(${m.id})" title="${getTranslation("profile_btn_edit")}">✏️</button>
+              <span style="font-weight:600;flex:1;text-align:right">${nh} ${fh}</span>
+              <span style="font-weight:700;color:var(--gold);font-size:1rem;margin:0 12px">${hs} × ${as}</span>
+              <span style="font-weight:600;flex:1;text-align:left">${fa} ${na}</span>
             ` : `
-              <input class="score-input" type="number" id="rh${m.id}" value="${hs}" placeholder="0" style="width:42px;padding:4px;text-align:center">
-              <span style="color:var(--muted)">×</span>
-              <input class="score-input" type="number" id="ra${m.id}" value="${as}" placeholder="0" style="width:42px;padding:4px;text-align:center">
-              <button class="btn btn--sm" style="padding:4px 8px" onclick="AS(${m.id})">${getTranslation("btn_save")}</button>
-              <span style="color:var(--border);margin:0 4px">|</span>
-              <button class="btn btn--sm" style="padding:4px 8px" onclick="showMatchForm(${m.id})" title="${getTranslation("profile_btn_edit")}">✏️</button>
-              <button class="btn--danger" style="padding:4px 8px;border-radius:4px" onclick="deleteMatch(${m.id})" title="Remover Partida">🗑</button>
+              <span style="font-weight:600;flex:1;text-align:right">${nh} ${fh}</span>
+              <div style="display:flex;align-items:center;gap:4px;margin:0 8px">
+                <input class="score-input" type="number" id="rh${m.id}" value="${hs}" placeholder="0" style="width:42px;padding:4px;text-align:center">
+                <span style="color:var(--muted)">×</span>
+                <input class="score-input" type="number" id="ra${m.id}" value="${as}" placeholder="0" style="width:42px;padding:4px;text-align:center">
+              </div>
+              <span style="font-weight:600;flex:1;text-align:left">${fa} ${na}</span>
+            `}
+          </div>
+          
+          <!-- Right: Action Buttons -->
+          <div style="display:flex;align-items:center;gap:6px">
+            ${scoreDefined ? `
+              <button class="btn--danger" style="padding:4px 8px;font-size:0.75rem" onclick="AC(${m.id})" title="${getTranslation("adm_clear_score")}">${getTranslation("adm_clear_score")}</button>
+              <button class="btn btn--sm" style="padding:4px 8px;font-size:0.75rem" onclick="showMatchForm(${m.id})" title="${getTranslation("profile_btn_edit")}">${getTranslation("profile_btn_edit")}</button>
+            ` : `
+              <button class="btn btn--sm" style="padding:4px 8px;font-size:0.75rem" onclick="AS(${m.id})">${getTranslation("btn_save")}</button>
+              <button class="btn btn--sm btn--outline" style="padding:4px 8px;font-size:0.75rem;border-color:var(--border)" onclick="showMatchForm(${m.id})" title="${getTranslation("profile_btn_edit")}">${getTranslation("profile_btn_edit")}</button>
+              <button class="btn--danger" style="padding:4px 8px;font-size:0.75rem" onclick="deleteMatch(${m.id})" title="Remover Partida">Remover</button>
             `}
           </div>
         </div>
