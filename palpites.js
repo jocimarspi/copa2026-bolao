@@ -244,7 +244,11 @@ window.SP = async (mid) => {
     window.UH();
     renderUnifiedMatches(currentFilter);
   } catch (err) {
-    alert(getTranslation("alert_error_save") + err.message);
+    if (err.code === "permission-denied") {
+      alert(getTranslation("alert_pred_closed") || "Palpite encerrado no servidor! Tempo limite esgotado.");
+    } else {
+      alert(getTranslation("alert_error_save") + err.message);
+    }
   } finally {
     if (btn) { btn.classList.remove("btn--loading"); btn.disabled = false; }
   }

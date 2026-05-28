@@ -26,7 +26,15 @@ export async function fetchAPI(db) {
       const hn = fx.teams.home.name.toLowerCase().slice(0, 5);
       const an = fx.teams.away.name.toLowerCase().slice(0, 5);
       const m = MX.find(x => TN(x.h).toLowerCase().includes(hn) || TN(x.a).toLowerCase().includes(an));
-      if (m) await setDoc(doc(db, "results", String(m.id)), { home, away, live, updatedAt: serverTimestamp() });
+      if (m) {
+        await setDoc(doc(db, "results", String(m.id)), {
+          home,
+          away,
+          live,
+          kickoffTime: new Date(m.ko),
+          updatedAt: serverTimestamp()
+        });
+      }
     }
     console.log("API buscada às", horaAtual, "por", state.ME.email);
   } catch (e) { console.warn("API", e); }

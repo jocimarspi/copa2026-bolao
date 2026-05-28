@@ -8,7 +8,7 @@ import { state } from "./state.js";
 import { initAuth, isAdm } from "./auth.js";
 import { fetchAPI } from "./api.js";
 import { renderLB, renderUnitFilters } from "./leaderboard.js";
-import { initPalpites, renderMatches } from "./palpites.js";
+import { initPalpites, renderMatches, renderPalpites } from "./palpites.js";
 import { initTournament, renderTorneio, renderGrupos } from "./tournament.js";
 import { initAdmin, renderAR, renderAL, renderAS, loadMM } from "./admin.js";
 import { UH, renderConta, renderLogin, SM, renderJanela, renderHistorico } from "./ui.js";

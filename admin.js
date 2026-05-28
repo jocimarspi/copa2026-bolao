@@ -38,7 +38,13 @@ window.AS = id => {
   const m = MX.find(x => x.id === id), nh = TN(m.h), na = TN(m.a);
   PS = { id, h, a };
   window.SM(`${getTranslation("adm_confirm_res")}<br><br><span style="font-size:1.1rem;font-weight:900;color:var(--gold)">${nh} ${h} × ${a} ${na}</span><br><br><span style="font-size:.75rem;color:var(--muted)">${getTranslation("adm_recalc_warning")}</span>`, async () => {
-    await setDoc(doc(db, "results", String(PS.id)), { home: PS.h, away: PS.a, live: false, updatedAt: serverTimestamp() });
+    await setDoc(doc(db, "results", String(PS.id)), { 
+      home: PS.h, 
+      away: PS.a, 
+      live: false, 
+      kickoffTime: new Date(m.ko),
+      updatedAt: serverTimestamp() 
+    });
     const sn = await getDocs(collection(db, "users"));
     for (const ud of sn.docs) {
       const ps = await getDocs(collection(db, "users", ud.id, "predictions"));
@@ -50,7 +56,13 @@ window.AS = id => {
 };
 
 window.AC = async id => {
-  await setDoc(doc(db, "results", String(id)), { home: null, away: null, live: false });
+  const m = MX.find(x => x.id === id);
+  await setDoc(doc(db, "results", String(id)), { 
+    home: null, 
+    away: null, 
+    live: false,
+    kickoffTime: m ? new Date(m.ko) : null
+  });
 };
 
 // MATA-MATA ADMIN
