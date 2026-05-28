@@ -1,5 +1,4 @@
-import { doc, setDoc, getDoc, getDocs, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { MX } from "./matches.js";
+import { doc, setDoc, getDoc, getDocs, collection, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { ADMINS } from "./admins.js";
 import { $, TN, FL, isOpen, lockLbl, pts, fmtDT } from "./helpers.js";
 import { state } from "./state.js";
@@ -10,7 +9,7 @@ export function initAdmin(dbInstance) { db = dbInstance; }
 
 export function renderAR() {
   const el = $("ar"); if (!el) return;
-  el.innerHTML = MX.map(m => {
+  el.innerHTML = state.MX.map(m => {
     const r = state.RES[m.id], hs = r && r.home !== null ? r.home : "", as = r && r.away !== null ? r.away : "";
     const fh = FL(m.h), fa = FL(m.a), nh = TN(m.h), na = TN(m.a);
     const op = isOpen(m), lk = lockLbl(m);
@@ -28,14 +27,14 @@ export function renderAS() {
   const el = $("as"); if (!el) return;
   const done = Object.values(state.RES).filter(r => r.home !== null).length;
   const un = [...new Set(state.USERS.map(u => u.unit).filter(Boolean))].length;
-  el.innerHTML = `<div class="admin-stats__item"><div class="admin-stats__number">${state.USERS.length}</div><div class="admin-stats__label">${getTranslation("adm_stats_users")}</div></div><div class="admin-stats__item"><div class="admin-stats__number">${done}</div><div class="admin-stats__label">${getTranslation("adm_stats_ended")}</div></div><div class="admin-stats__item"><div class="admin-stats__number">${MX.length - done}</div><div class="admin-stats__label">${getTranslation("adm_stats_remaining")}</div></div><div class="admin-stats__item"><div class="admin-stats__number">${un}</div><div class="admin-stats__label">${getTranslation("adm_stats_units")}</div></div>`;
+  el.innerHTML = `<div class="admin-stats__item"><div class="admin-stats__number">${state.USERS.length}</div><div class="admin-stats__label">${getTranslation("adm_stats_users")}</div></div><div class="admin-stats__item"><div class="admin-stats__number">${done}</div><div class="admin-stats__label">${getTranslation("adm_stats_ended")}</div></div><div class="admin-stats__item"><div class="admin-stats__number">${state.MX.length - done}</div><div class="admin-stats__label">${getTranslation("adm_stats_remaining")}</div></div><div class="admin-stats__item"><div class="admin-stats__number">${un}</div><div class="admin-stats__label">${getTranslation("adm_stats_units")}</div></div>`;
 }
 
 let PS = null;
 window.AS = id => {
   const h = parseInt($(`rh${id}`)?.value), a = parseInt($(`ra${id}`)?.value);
   if (isNaN(h) || isNaN(a) || h < 0 || a < 0) { window.SM(getTranslation("adm_invalid_score"), null); return; }
-  const m = MX.find(x => x.id === id), nh = TN(m.h), na = TN(m.a);
+  const m = state.MX.find(x => x.id === id), nh = TN(m.h), na = TN(m.a);
   PS = { id, h, a };
   window.SM(`${getTranslation("adm_confirm_res")}<br><br><span style="font-size:1.1rem;font-weight:900;color:var(--gold)">${nh} ${h} × ${a} ${na}</span><br><br><span style="font-size:.75rem;color:var(--muted)">${getTranslation("adm_recalc_warning")}</span>`, async () => {
     await setDoc(doc(db, "results", String(PS.id)), { 
@@ -56,7 +55,7 @@ window.AS = id => {
 };
 
 window.AC = async id => {
-  const m = MX.find(x => x.id === id);
+  const m = state.MX.find(x => x.id === id);
   await setDoc(doc(db, "results", String(id)), { 
     home: null, 
     away: null, 
@@ -117,4 +116,232 @@ window.saveMM = async () => {
   await setDoc(doc(db, "torneio", "matamata"), data);
   MM_DATA = data;
   window.SM(getTranslation("adm_mm_saved"), null);
+};
+
+// GERENCIAMENTO DE PARTIDAS
+export function renderAM() {
+  const el = $("admin-matches-list"); if (!el) return;
+  el.innerHTML = state.MX.map(m => {
+    const fh = FL(m.h), fa = FL(m.a), nh = TN(m.h), na = TN(m.a);
+    const badge = m.test ? `<span class="match-card__tag" style="background:#5b21b6;color:#ddd;padding:2px 6px;border-radius:4px;font-size:0.6rem">TESTE</span>` : `<span class="match-card__tag" style="background:var(--border);color:var(--muted);padding:2px 6px;border-radius:4px;font-size:0.6rem">Grupo ${m.g}</span>`;
+    return `
+      <div class="card" style="padding:10px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,255,255,0.01)">
+        <div style="display:flex;flex-direction:column;gap:4px;flex:1">
+          <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;font-weight:600">
+            <span>${m.id}.</span>
+            ${fh} ${nh} × ${na} ${fa}
+            ${badge}
+          </div>
+          <div style="color:var(--muted);font-size:0.7rem">
+            ${fmtDT(m.ko).d} · ${fmtDT(m.ko).t} · ${m.rod}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn--sm" style="padding:4px 8px" onclick="showMatchForm(${m.id})">✏️</button>
+          <button class="btn--danger" style="padding:4px 8px;border-radius:4px" onclick="deleteMatch(${m.id})">🗑</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+window.showMatchForm = (id) => {
+  const container = $("match-form-container");
+  if (!container) return;
+  
+  if (id) {
+    const m = state.MX.find(x => x.id === id);
+    if (!m) return;
+    $("match-form-title").innerText = "Editar Partida #" + id;
+    $("mf-id").value = m.id;
+    $("mf-num").value = m.id;
+    $("mf-num").disabled = true;
+    $("mf-home").value = m.h;
+    $("mf-away").value = m.a;
+    $("mf-group").value = m.g || "";
+    $("mf-rod").value = m.rod || "";
+    $("mf-test").checked = !!m.test;
+    
+    if (m.ko) {
+      try {
+        const d = new Date(m.ko);
+        const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        $("mf-ko").value = iso;
+      } catch (e) {
+        $("mf-ko").value = "";
+      }
+    } else {
+      $("mf-ko").value = "";
+    }
+  } else {
+    $("match-form-title").innerText = "Adicionar Partida";
+    $("mf-id").value = "";
+    $("mf-num").value = "";
+    $("mf-num").disabled = false;
+    $("mf-home").value = "";
+    $("mf-away").value = "";
+    $("mf-group").value = "";
+    $("mf-rod").value = "";
+    $("mf-test").checked = false;
+    $("mf-ko").value = "";
+  }
+  container.style.display = "block";
+};
+
+window.hideMatchForm = () => {
+  const container = $("match-form-container");
+  if (container) container.style.display = "none";
+};
+
+window.saveMatch = async () => {
+  const idStr = $("mf-id").value;
+  const numVal = parseInt($("mf-num").value);
+  const home = $("mf-home").value.trim().toLowerCase();
+  const away = $("mf-away").value.trim().toLowerCase();
+  const group = $("mf-group").value.trim().toUpperCase();
+  const rod = $("mf-rod").value.trim().toUpperCase();
+  const test = $("mf-test").checked;
+  const koVal = $("mf-ko").value;
+  
+  if (isNaN(numVal) || numVal <= 0) { alert("ID do jogo inválido!"); return; }
+  if (!home || !away) { alert("Preencha os times!"); return; }
+  if (!koVal) { alert("Preencha a data do kickoff!"); return; }
+  
+  const ko = new Date(koVal).toISOString();
+  
+  const mData = {
+    g: group,
+    rod: rod,
+    h: home,
+    a: away,
+    ko: ko,
+  };
+  if (test) mData.test = true;
+  
+  try {
+    await setDoc(doc(db, "matches", String(numVal)), mData);
+    window.hideMatchForm();
+    window.SM("Partida salva com sucesso!", null);
+  } catch (e) {
+    alert("Erro ao salvar partida: " + e.message);
+  }
+};
+
+window.deleteMatch = async (id) => {
+  window.SM(`Deseja realmente remover a partida #${id}? Esta ação é irreversível e removerá também palpites e resultados deste jogo.`, async () => {
+    try {
+      await deleteDoc(doc(db, "matches", String(id)));
+      await deleteDoc(doc(db, "results", String(id)));
+      window.SM("Partida removida com sucesso!", null);
+    } catch (e) {
+      alert("Erro ao deletar partida: " + e.message);
+    }
+  });
+};
+
+window.confirmResetMatches = () => {
+  window.SM("Deseja realmente restaurar todas as partidas padrão do arquivo? Isso substituirá as modificações atuais no banco de dados.", async () => {
+    try {
+      const { DEFAULT_MATCHES: defaultMatches } = await import("./state.js");
+      for (const m of defaultMatches) {
+        const mData = {
+          g: m.g || "",
+          rod: m.rod || "",
+          h: m.h || "",
+          a: m.a || "",
+          ko: m.ko || "",
+        };
+        if (m.test !== undefined) mData.test = m.test;
+        if (m.round !== undefined) mData.round = m.round;
+        await setDoc(doc(db, "matches", String(m.id)), mData);
+      }
+      window.SM("Partidas restauradas com sucesso!", null);
+    } catch (e) {
+      alert("Erro ao restaurar partidas: " + e.message);
+    }
+  });
+};
+
+export async function loadApiUrl() {
+  const el = $("mf-api-url");
+  if (!el) return;
+  try {
+    const s = await getDoc(doc(db, "system", "config"));
+    if (s.exists() && s.data().apiUrl) {
+      el.value = s.data().apiUrl;
+    } else {
+      el.value = "";
+    }
+  } catch (e) {
+    console.error("Erro ao carregar URL da API:", e);
+  }
+}
+
+window.saveApiUrl = async () => {
+  const url = $("mf-api-url")?.value.trim() || "";
+  try {
+    await setDoc(doc(db, "system", "config"), { apiUrl: url }, { merge: true });
+    window.SM(getTranslation("adm_api_url_saved") || "URL salva com sucesso!", null);
+  } catch (e) {
+    alert("Erro ao salvar URL: " + e.message);
+  }
+};
+
+window.importMatchesFromAPI = async () => {
+  const urlEl = $("mf-api-url");
+  const url = urlEl ? urlEl.value.trim() : "";
+  if (!url) {
+    window.SM("Por favor, configure e salve a URL da Cloud Function primeiro.", null);
+    return;
+  }
+
+  const confirmMsg = getTranslation("adm_import_confirm") ||
+    "Deseja realmente importar as partidas da API oficial? Isso irá atualizar ou adicionar jogos na coleção 'matches'.";
+
+  window.SM(confirmMsg, async () => {
+    try {
+      const btn = document.querySelector('button[onclick="importMatchesFromAPI()"]');
+      let originalText = "";
+      if (btn) {
+        originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = "⏳ Importando...";
+      }
+
+      const res = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Accept": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+
+      const count = data.count || 0;
+      let successMsg = getTranslation("adm_import_success") ||
+        "Partidas importadas com sucesso! {count} jogos atualizados.";
+      successMsg = successMsg.replace("{count}", count);
+
+      window.SM(successMsg, () => {
+        window.location.reload();
+      });
+    } catch (e) {
+      const btn = document.querySelector('button[onclick="importMatchesFromAPI()"]');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = "🌐 Importar da API";
+      }
+      alert("Erro ao importar partidas: " + e.message);
+    }
+  });
 };

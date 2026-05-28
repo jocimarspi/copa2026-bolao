@@ -1,5 +1,4 @@
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { MX } from "./matches.js";
 import { $, FL, TN, isOpen, lockLbl, pSt, pts, fmtDT } from "./helpers.js";
 import { state } from "./state.js";
 import { getTranslation } from "./i18n.js";
@@ -179,7 +178,7 @@ export function cardUnifiedMatch(m) {
 export function renderUnifiedMatches(filter = "todos") {
   const el = $("ml"); if (!el) return;
   
-  let list = [...MX];
+  let list = [...state.MX];
   if (filter === "teste") {
     list = list.filter(m => m.test).sort((a, b) => new Date(a.ko) - new Date(b.ko));
   } else {
@@ -229,7 +228,7 @@ window.filterUnifiedMatches = function (filter, btn) {
 // Save Prediction Action
 window.SP = async (mid) => {
   if (!state.ME) { alert(getTranslation("alert_need_login")); return; }
-  const m = MX.find(x => x.id === mid); if (m && !isOpen(m)) { alert(getTranslation("alert_pred_closed")); return; }
+  const m = state.MX.find(x => x.id === mid); if (m && !isOpen(m)) { alert(getTranslation("alert_pred_closed")); return; }
   const h = parseInt($(`ph${mid}`)?.value), a = parseInt($(`pa${mid}`)?.value);
   if (isNaN(h) || isNaN(a) || h < 0 || a < 0) { alert(getTranslation("alert_invalid_score")); return; }
   

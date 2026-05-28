@@ -1,5 +1,4 @@
 import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { MX } from "./matches.js";
 import { TN } from "./helpers.js";
 import { state } from "./state.js";
 
@@ -25,7 +24,7 @@ export async function fetchAPI(db) {
       const live = ["1H", "HT", "2H", "ET", "P"].includes(fx.fixture.status.short);
       const hn = fx.teams.home.name.toLowerCase().slice(0, 5);
       const an = fx.teams.away.name.toLowerCase().slice(0, 5);
-      const m = MX.find(x => TN(x.h).toLowerCase().includes(hn) || TN(x.a).toLowerCase().includes(an));
+      const m = state.MX.find(x => TN(x.h).toLowerCase().includes(hn) || TN(x.a).toLowerCase().includes(an));
       if (m) {
         await setDoc(doc(db, "results", String(m.id)), {
           home,

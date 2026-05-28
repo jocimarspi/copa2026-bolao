@@ -1,4 +1,4 @@
-import { MX } from "./matches.js";
+import { state } from "./state.js";
 import { UNITS } from "./units.js";
 
 import { getTranslation } from "./i18n.js";
@@ -10,7 +10,7 @@ export function pts(preds, RES, includeTest = false) {
   let p = 0;
   for (const [mid, pred] of Object.entries(preds || {})) {
     const r = RES[mid]; if (!r || r.home === null) continue;
-    const m = MX.find(x => String(x.id) === String(mid));
+    const m = state.MX.find(x => String(x.id) === String(mid));
     if (m?.test && !includeTest) continue;
     if (pred.home === r.home && pred.away === r.away) { p += 5; continue; }
     if (sgn(pred.home - pred.away) === sgn(r.home - r.away)) p += 3;
@@ -20,7 +20,7 @@ export function pts(preds, RES, includeTest = false) {
 
 export function ptsRound(preds, roundName, RES) {
   let p = 0;
-  const mids = MX.filter(x => x.round === roundName).map(x => String(x.id));
+  const mids = state.MX.filter(x => x.round === roundName).map(x => String(x.id));
   for (const mid of mids) {
     const pred = preds[mid], r = RES[mid]; if (!pred || !r || r.home === null) continue;
     if (pred.home === r.home && pred.away === r.away) { p += 5; continue; }
@@ -74,7 +74,13 @@ const _FM = {
   "france":"fr","senegal":"sn","iraq":"iq","norway":"no",
   "argentina":"ar","algeria":"dz","austria":"at","jordan":"jo",
   "portugal":"pt","dr_congo":"cd","uzbekistan":"uz","colombia":"co",
-  "england":"gb-eng","croatia":"hr","ghana":"gh","panama":"pa"
+  "england":"gb-eng","croatia":"hr","ghana":"gh","panama":"pa",
+  // Mapas adicionais para compatibilidade com nomes normalizados diretamente da API
+  "united_states_of_america":"us","united_states":"us","czech_republic":"cz","czechia":"cz",
+  "bosnia_and_herzegovina":"ba","bosnia_herzegovina":"ba","korea_republic":"kr","cabo_verde":"cv","cape_verde_islands":"cv",
+  "democratic_republic_of_the_congo":"cd","congo_dr":"cd",
+  "cote_d_ivoire":"ci","cote_divoire":"ci","cote_d'ivoire":"ci",
+  "turkiye":"tr","ir_iran":"ir"
 };
 
 export function FL(key) {
