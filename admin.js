@@ -1,8 +1,9 @@
 import { doc, setDoc, getDoc, getDocs, collection, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { $, TN, FL, isOpen, lockLbl, pts, fmtDT, parseKoDate } from "./helpers.js";
+import { $, TN, FL, isOpen, lockLbl, pts, fmtDT, parseKoDate, escapeHTML } from "./helpers.js";
 import { state, UNITS } from "./state.js";
 import { getTranslation } from "./i18n.js";
 import { recalculateStandings } from "./api.js";
+import { getAuthToken } from "./auth.js";
 
 let db;
 export function initAdmin(dbInstance) { db = dbInstance; }
@@ -24,15 +25,16 @@ export function renderAL() {
     <div style="display:flex;flex-direction:column;gap:6px">
       ${allAdmins.map(e => {
         const isBootstrap = bootstrapAdmins.includes(e);
+        const escapedE = escapeHTML(e);
         const deleteBtn = isBootstrap 
           ? `<span class="admin-pill" style="background:var(--border);color:var(--muted);font-size:0.55rem;padding:3px 6px">BOOTSTRAP</span>`
-          : `<button class="btn--danger" style="width:26px;height:26px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;border-radius:4px" onclick="deleteAdmin('${e}')" title="Remover Admin">✕</button>`;
+          : `<button class="btn--danger" style="width:26px;height:26px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;border-radius:4px" onclick="deleteAdmin('${escapedE}')" title="Remover Admin">✕</button>`;
         return `
           <div class="card" style="padding:10px;margin-bottom:2px;background:rgba(255,255,255,0.01);max-width:100%">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
               <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
                 <div class="leaderboard__avatar" style="font-size:.9rem;width:24px;height:24px;display:flex;align-items:center;justify-content:center;flex-shrink:0">⚙️</div>
-                <div class="leaderboard__name" style="font-size:0.8rem;text-overflow:ellipsis;overflow:hidden;white-space:nowrap" title="${e}">${e}</div>
+                <div class="leaderboard__name" style="font-size:0.8rem;text-overflow:ellipsis;overflow:hidden;white-space:nowrap" title="${escapedE}">${escapedE}</div>
               </div>
               <div style="flex-shrink:0">
                 ${deleteBtn}
@@ -395,11 +397,17 @@ window.importMatchesFromAPI = async () => {
         btn.innerHTML = "⏳ Importando...";
       }
 
+      const token = await getAuthToken();
+      const headers = {
+        "Accept": "application/json",
+      };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const res = await fetch(url, {
         method: "GET",
-        headers: {
-          "Accept": "application/json",
-        },
+        headers,
       });
 
       if (!res.ok) {
