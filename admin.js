@@ -1,6 +1,6 @@
 import { doc, setDoc, getDoc, getDocs, collection, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { ADMINS } from "./admins.js";
-import { $, TN, FL, isOpen, lockLbl, pts, fmtDT } from "./helpers.js";
+import { $, TN, FL, isOpen, lockLbl, pts, fmtDT, parseKoDate } from "./helpers.js";
 import { state } from "./state.js";
 import { getTranslation } from "./i18n.js";
 
@@ -41,7 +41,7 @@ window.AS = id => {
       home: PS.h, 
       away: PS.a, 
       live: false, 
-      kickoffTime: new Date(m.ko),
+      kickoffTime: parseKoDate(m.ko),
       updatedAt: serverTimestamp() 
     });
     const sn = await getDocs(collection(db, "users"));
@@ -57,10 +57,10 @@ window.AS = id => {
 window.AC = async id => {
   const m = state.MX.find(x => x.id === id);
   await setDoc(doc(db, "results", String(id)), { 
-    home: null, 
-    away: null, 
-    live: false,
-    kickoffTime: m ? new Date(m.ko) : null
+      home: null, 
+      away: null, 
+      live: false,
+      kickoffTime: m ? parseKoDate(m.ko) : null
   });
 };
 
@@ -164,7 +164,7 @@ window.showMatchForm = (id) => {
     
     if (m.ko) {
       try {
-        const d = new Date(m.ko);
+        const d = parseKoDate(m.ko);
         const iso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
         $("mf-ko").value = iso;
       } catch (e) {

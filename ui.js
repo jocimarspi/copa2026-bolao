@@ -116,9 +116,10 @@ export function renderJanela() {
   const aberta = minUTC >= abre && minUTC < fecha;
   if (aberta) {
     el.innerHTML = `<div class="alert alert--success" style="display:flex;align-items:center;gap:10px;margin-bottom:0"><span style="font-size:1.1rem">🟢</span><div><strong>${getTranslation("window_open_title")}</strong> — ${getTranslation("window_open_desc")}<br><span style="font-size:.75rem;opacity:.8">${getTranslation("window_open_tip")}</span></div></div>`;
+    el.style.display = "block";
   } else {
-    const proximaAbertura = minUTC >= fecha ? getTranslation("window_opens_tomorrow") : getTranslation("window_opens_today");
-    el.innerHTML = `<div class="alert alert--error" style="display:flex;align-items:center;gap:10px;margin-bottom:0"><span style="font-size:1.1rem">🔴</span><div><strong>${getTranslation("window_closed_title")}</strong> — ${getTranslation("window_closed_opens")}${proximaAbertura}.<br><span style="font-size:.75rem;opacity:.8">${getTranslation("window_closed_desc")}</span></div></div>`;
+    el.innerHTML = "";
+    el.style.display = "none";
   }
 }
 

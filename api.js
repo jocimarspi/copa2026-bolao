@@ -1,5 +1,5 @@
 import { doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { TN } from "./helpers.js";
+import { TN, parseKoDate } from "./helpers.js";
 import { state } from "./state.js";
 
 const APIKEY = "f94a4cd5d9aa247a17505718db07f559";
@@ -30,7 +30,7 @@ export async function fetchAPI(db) {
           home,
           away,
           live,
-          kickoffTime: new Date(m.ko),
+          kickoffTime: parseKoDate(m.ko),
           updatedAt: serverTimestamp()
         });
       }

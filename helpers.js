@@ -28,11 +28,22 @@ export function ptsRound(preds, roundName, RES) {
   }
   return p;
 }
+export function parseKoDate(ko) {
+  if (!ko) return new Date(NaN);
+  if (ko instanceof Date) return ko;
+  if (ko && typeof ko.toDate === "function") return ko.toDate();
+  if (typeof ko === "string") {
+    const sliceStart = ko.includes("T") ? ko.indexOf("T") : 10;
+    const hasTz = /[Z+-]/.test(ko.slice(sliceStart));
+    return new Date(hasTz ? ko : ko + "Z");
+  }
+  return new Date(ko);
+}
 
-export const isOpen = m => Date.now() < new Date(m.ko).getTime() - 300000;
+export const isOpen = m => Date.now() < parseKoDate(m.ko).getTime() - 1800000;
 
 export function lockLbl(m) {
-  const d = new Date(m.ko).getTime() - 300000 - Date.now();
+  const d = parseKoDate(m.ko).getTime() - 1800000 - Date.now();
   if (d <= 0) return null;
   const h = Math.floor(d / 3600000), mn = Math.floor((d % 3600000) / 60000);
   if (h > 24) return `${getTranslation("helper_closes_in")}${Math.floor(d / 86400000)}d`;
@@ -95,7 +106,7 @@ export function UB(k) {
 }
 
 export function fmtDT(ko) {
-  const d = new Date(ko);
+  const d = parseKoDate(ko);
   if (isNaN(d.getTime())) return { d: "", t: "" };
 
   const locale = navigator.language || "pt-BR";

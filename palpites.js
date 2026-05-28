@@ -1,5 +1,5 @@
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { $, FL, TN, isOpen, lockLbl, pSt, pts, fmtDT } from "./helpers.js";
+import { $, FL, TN, isOpen, lockLbl, pSt, pts, fmtDT, parseKoDate } from "./helpers.js";
 import { state } from "./state.js";
 import { getTranslation } from "./i18n.js";
 
@@ -180,13 +180,13 @@ export function renderUnifiedMatches(filter = "todos") {
   
   let list = [...state.MX];
   if (filter === "teste") {
-    list = list.filter(m => m.test).sort((a, b) => new Date(a.ko) - new Date(b.ko));
+    list = list.filter(m => m.test).sort((a, b) => parseKoDate(a.ko) - parseKoDate(b.ko));
   } else {
     list = list.filter(m => !m.test);
     if (filter !== "todos") {
       list = list.filter(m => m.rod === filter);
     }
-    list.sort((a, b) => new Date(a.ko) - new Date(b.ko));
+    list.sort((a, b) => parseKoDate(a.ko) - parseKoDate(b.ko));
   }
 
   let html = "";
