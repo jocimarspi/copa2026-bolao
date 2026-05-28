@@ -6,7 +6,7 @@ import { $, getEcosystemStyles } from "./helpers.js";
 import { state, DEFAULT_MATCHES, UNITS } from "./state.js";
 import { initAuth, isAdm } from "./auth.js";
 import { fetchAPI } from "./api.js";
-import { renderLB, renderUnitFilters } from "./leaderboard.js";
+import { renderLB } from "./leaderboard.js";
 import { initPalpites, renderMatches, renderPalpites } from "./palpites.js";
 import { initTournament, renderTorneio, renderGrupos } from "./tournament.js";
 import { initAdmin, renderAR, renderAL, renderAS, loadMM, renderAM, loadApiUrl, renderBusinessUnitsList } from "./admin.js";
@@ -144,7 +144,6 @@ function startListeners() {
       };
     }
 
-    renderUnitFilters();
     renderLB();
     renderConta();
     if (state.ME && isAdm(state.ME.email)) {
@@ -258,7 +257,6 @@ window.UH = UH;
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 applyTranslations();
-renderUnitFilters();
 renderMatches();
 renderJanela();
 setInterval(renderJanela, 60000);

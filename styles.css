@@ -604,6 +604,28 @@ main {
   border-radius: 3px;
 }
 
+/* Accordion de Unidades */
+.leaderboard__unit-accordion {
+  overflow: hidden;
+}
+
+.leaderboard__unit-header {
+  color: var(--text);
+  transition: background .15s;
+}
+
+.leaderboard__unit-header:hover {
+  background: rgba(255,255,255,.03);
+}
+
+.leaderboard__row--member {
+  background: rgba(255,255,255,.025);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 6px;
+  margin-bottom: 3px;
+  padding: 8px 12px;
+}
+
 /* ══════════════ UNIT FILTERS ══════════════ */
 .unit-filters {
   display: flex;
