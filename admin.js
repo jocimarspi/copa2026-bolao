@@ -156,7 +156,7 @@ export function renderAM() {
           </div>
           
           <!-- Right: Action Buttons -->
-          <div style="display:flex;align-items:center;gap:6px">
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;width:140px;flex-shrink:0">
             ${scoreDefined ? `
               <button class="btn--danger" style="padding:4px 8px;font-size:0.75rem" onclick="AC(${m.id})" title="${getTranslation("adm_clear_score")}">✕</button>
               <button class="btn btn--sm" style="padding:4px 8px;font-size:0.75rem" onclick="showMatchForm(${m.id})" title="${getTranslation("profile_btn_edit")}">✏️</button>
