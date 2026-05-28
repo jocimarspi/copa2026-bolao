@@ -9,14 +9,7 @@ let db;
 export function initAdmin(dbInstance) { db = dbInstance; }
 
 export function renderAR() {
-  const el = $("ar"); if (!el) return;
-  el.innerHTML = state.MX.map(m => {
-    const r = state.RES[m.id], hs = r && r.home !== null ? r.home : "", as = r && r.away !== null ? r.away : "";
-    const fh = FL(m.h), fa = FL(m.a), nh = TN(m.h), na = TN(m.a);
-    const op = isOpen(m), lk = lockLbl(m);
-    const sl = op ? `<span style="font-size:.62rem;color:#4ade80;font-weight:700">${lk || getTranslation("adm_open")}</span>` : r && r.home !== null ? `<span style="font-size:.62rem;color:var(--muted)">${getTranslation("adm_ended")}</span>` : `<span style="font-size:.62rem;color:var(--red);font-weight:700">${getTranslation("adm_closed")}</span>`;
-    return `<div class="card" style="padding:10px;margin-bottom:6px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="flex:1;font-size:.8rem;font-weight:600">${fh} ${nh} × ${na} ${fa} <span style="color:var(--muted);font-size:.7rem">${fmtDT(m.ko).d} · ${fmtDT(m.ko).t}</span></span>${sl}<input class="score-input" type="number" id="rh${m.id}" value="${hs}" placeholder="0" style="width:42px"><span style="color:var(--muted)">×</span><input class="score-input" type="number" id="ra${m.id}" value="${as}" placeholder="0" style="width:42px"><button class="btn btn--sm" onclick="AS(${m.id})">${getTranslation("btn_save")}</button>${r && r.home !== null ? `<button class="btn--danger" onclick="AC(${m.id})">🗑</button>` : ""}</div></div>`;
-  }).join("");
+  renderAM();
 }
 
 export function renderAL() {
@@ -118,24 +111,45 @@ window.saveMM = async () => {
 // GERENCIAMENTO DE PARTIDAS
 export function renderAM() {
   const el = $("admin-matches-list"); if (!el) return;
-  el.innerHTML = state.MX.map(m => {
+  const list = [...state.MX].sort((a, b) => parseKoDate(a.ko) - parseKoDate(b.ko));
+  el.innerHTML = list.map(m => {
+    const r = state.RES[m.id], hs = r && r.home !== null ? r.home : "";
+    const as = r && r.away !== null ? r.away : "";
     const fh = FL(m.h), fa = FL(m.a), nh = TN(m.h), na = TN(m.a);
+    const op = isOpen(m), lk = lockLbl(m);
+    const sl = op ? `<span style="font-size:.62rem;color:#4ade80;font-weight:700">${lk || getTranslation("adm_open")}</span>` : r && r.home !== null ? `<span style="font-size:.62rem;color:var(--muted)">${getTranslation("adm_ended")}</span>` : `<span style="font-size:.62rem;color:var(--red);font-weight:700">${getTranslation("adm_closed")}</span>`;
     const badge = m.test ? `<span class="match-card__tag" style="background:#5b21b6;color:#ddd;padding:2px 6px;border-radius:4px;font-size:0.6rem">TESTE</span>` : `<span class="match-card__tag" style="background:var(--border);color:var(--muted);padding:2px 6px;border-radius:4px;font-size:0.6rem">Grupo ${m.g}</span>`;
+    const scoreDefined = r && r.home !== null;
     return `
-      <div class="card" style="padding:10px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,255,255,0.01)">
-        <div style="display:flex;flex-direction:column;gap:4px;flex:1">
-          <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;font-weight:600">
-            <span>${m.id}.</span>
-            ${fh} ${nh} × ${na} ${fa}
-            ${badge}
+      <div class="card" style="padding:10px;margin-bottom:6px;background:rgba(255,255,255,0.01)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:200px">
+            <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;font-weight:600;flex-wrap:wrap">
+              <span>${m.id}.</span>
+              <span>${fh} ${nh} × ${na} ${fa}</span>
+              ${badge}
+              ${sl}
+            </div>
+            <div style="color:var(--muted);font-size:0.7rem">
+              ${fmtDT(m.ko).d} · ${fmtDT(m.ko).t} · ${m.rod}
+            </div>
           </div>
-          <div style="color:var(--muted);font-size:0.7rem">
-            ${fmtDT(m.ko).d} · ${fmtDT(m.ko).t} · ${m.rod}
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            ${scoreDefined ? `
+              <span style="font-size:0.85rem;font-weight:700;color:var(--gold);margin-right:8px">${hs} × ${as}</span>
+              <button class="btn--danger" style="padding:4px 8px;border-radius:4px" onclick="AC(${m.id})" title="${getTranslation("adm_clear_score")}">✕</button>
+              <span style="color:var(--border);margin:0 4px">|</span>
+              <button class="btn btn--sm" style="padding:4px 8px" onclick="showMatchForm(${m.id})" title="${getTranslation("profile_btn_edit")}">✏️</button>
+            ` : `
+              <input class="score-input" type="number" id="rh${m.id}" value="${hs}" placeholder="0" style="width:42px;padding:4px;text-align:center">
+              <span style="color:var(--muted)">×</span>
+              <input class="score-input" type="number" id="ra${m.id}" value="${as}" placeholder="0" style="width:42px;padding:4px;text-align:center">
+              <button class="btn btn--sm" style="padding:4px 8px" onclick="AS(${m.id})">${getTranslation("btn_save")}</button>
+              <span style="color:var(--border);margin:0 4px">|</span>
+              <button class="btn btn--sm" style="padding:4px 8px" onclick="showMatchForm(${m.id})" title="${getTranslation("profile_btn_edit")}">✏️</button>
+              <button class="btn--danger" style="padding:4px 8px;border-radius:4px" onclick="deleteMatch(${m.id})" title="Remover Partida">🗑</button>
+            `}
           </div>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn--sm" style="padding:4px 8px" onclick="showMatchForm(${m.id})">✏️</button>
-          <button class="btn--danger" style="padding:4px 8px;border-radius:4px" onclick="deleteMatch(${m.id})">🗑</button>
         </div>
       </div>
     `;
