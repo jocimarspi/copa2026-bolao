@@ -3,6 +3,7 @@ import { ADMINS } from "./admins.js";
 import { $, TN, FL, isOpen, lockLbl, pts, fmtDT, parseKoDate } from "./helpers.js";
 import { state } from "./state.js";
 import { getTranslation } from "./i18n.js";
+import { recalculateStandings } from "./api.js";
 
 let db;
 export function initAdmin(dbInstance) { db = dbInstance; }
@@ -44,12 +45,7 @@ window.AS = id => {
       kickoffTime: parseKoDate(m.ko),
       updatedAt: serverTimestamp() 
     });
-    const sn = await getDocs(collection(db, "users"));
-    for (const ud of sn.docs) {
-      const ps = await getDocs(collection(db, "users", ud.id, "predictions"));
-      const pp = {}; ps.forEach(d => { pp[d.id] = d.data(); });
-      await setDoc(doc(db, "users", ud.id), { pts: pts(pp, state.RES) }, { merge: true });
-    }
+    await recalculateStandings(db);
     PS = null;
   });
 };
@@ -62,6 +58,7 @@ window.AC = async id => {
       live: false,
       kickoffTime: m ? parseKoDate(m.ko) : null
   });
+  await recalculateStandings(db);
 };
 
 // MATA-MATA ADMIN
@@ -232,6 +229,7 @@ window.deleteMatch = async (id) => {
     try {
       await deleteDoc(doc(db, "matches", String(id)));
       await deleteDoc(doc(db, "results", String(id)));
+      await recalculateStandings(db);
       window.SM("Partida removida com sucesso!", null);
     } catch (e) {
       alert("Erro ao deletar partida: " + e.message);

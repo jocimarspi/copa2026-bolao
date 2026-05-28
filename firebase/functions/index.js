@@ -1,5 +1,6 @@
 const {onSchedule} = require("firebase-functions/v2/scheduler");
 const {onRequest} = require("firebase-functions/v2/https");
+const {onDocumentWritten} = require("firebase-functions/v2/firestore");
 const {initializeApp} = require("firebase-admin/app");
 const {getFirestore} = require("firebase-admin/firestore");
 
@@ -29,6 +30,81 @@ function normalizeTeamName(name) {
 }
 
 /**
+ * Recalcula a pontuação dos usuários com base nos palpites e resultados.
+ * @param {object} dbInstance Instância do Firestore.
+ */
+async function recalculateStandings(dbInstance) {
+  try {
+    console.log("Recalculating standings on backend...");
+    const resultsSnap = await dbInstance.collection("results").get();
+    const latestResults = {};
+    resultsSnap.forEach((d) => {
+      latestResults[d.id] = d.data();
+    });
+
+    const matchesSnap = await dbInstance.collection("matches").get();
+    const matchesList = [];
+    matchesSnap.forEach((d) => {
+      matchesList.push({id: Number(d.id), ...d.data()});
+    });
+
+    const sgn = (n) => n > 0 ? 1 : n < 0 ? -1 : 0;
+
+    const pts = (preds, RES) => {
+      let p = 0;
+      for (const [mid, pred] of Object.entries(preds || {})) {
+        const r = RES[mid];
+        if (!r || r.home === null || r.home === undefined) continue;
+        const m = matchesList.find((x) => String(x.id) === String(mid));
+        if (m && m.test) continue;
+        if (pred.home === r.home && pred.away === r.away) {
+          p += 5;
+          continue;
+        }
+        if (sgn(pred.home - pred.away) === sgn(r.home - r.away)) {
+          p += 3;
+        }
+      }
+      return p;
+    };
+
+    const usersSnap = await dbInstance.collection("users").get();
+    const batch = dbInstance.batch();
+
+    for (const userDoc of usersSnap.docs) {
+      const userId = userDoc.id;
+      const predictionsSnap = await dbInstance.collection("users")
+          .doc(userId).collection("predictions").get();
+      const userPredictions = {};
+      predictionsSnap.forEach((d) => {
+        userPredictions[d.id] = d.data();
+      });
+
+      const newPoints = pts(userPredictions, latestResults);
+      batch.update(dbInstance.collection("users").doc(userId), {
+        pts: newPoints,
+      });
+    }
+
+    await batch.commit();
+    console.log("Standings successfully recalculated!");
+  } catch (error) {
+    console.error("Error recalculating standings:", error);
+  }
+}
+
+/**
+ * Cloud Function acionada quando um resultado é atualizado no Firestore.
+ */
+exports.onResultWritten = onDocumentWritten(
+    "results/{matchId}",
+    async (event) => {
+      console.log(`Result for ${event.params.matchId} updated.`);
+      await recalculateStandings(db);
+    },
+);
+
+/**
  * Cloud Function agendada para rodar a cada 15 minutos.
  * Consome os resultados da API externa e atualiza o Firestore.
  */
@@ -41,8 +117,6 @@ exports.atualizarResultadosBolao = onSchedule("*/15 * * * *", async (event) => {
   }
 
   try {
-    // Consome a API do football-data.org.
-    // Filtra partidas pela competição desejada.
     const url = `https://api.football-data.org/v4/competitions/` +
         `${COMPETITION_CODE}/matches`;
     const response = await fetch(url, {
@@ -59,67 +133,68 @@ exports.atualizarResultadosBolao = onSchedule("*/15 * * * *", async (event) => {
     }
 
     const data = await response.json();
-    const matches = data.matches || [];
+    const apiMatches = data.matches || [];
 
-    // Filtra apenas as partidas que foram encerradas (FINISHED)
-    const finishedMatches = matches.filter(
+    const finishedMatches = apiMatches.filter(
         (match) => match.status === "FINISHED",
     );
 
     if (finishedMatches.length === 0) {
-      console.log(
-          "Nenhuma partida encerrada encontrada na resposta da API.",
-      );
+      console.log("Nenhuma partida encerrada encontrada na resposta da API.");
       return;
     }
 
-    // Usamos um Batch do Firestore para agrupar as atualizações
+    const matchesSnap = await db.collection("matches").get();
+    const dbMatches = [];
+    matchesSnap.forEach((d) => {
+      dbMatches.push({id: Number(d.id), ...d.data()});
+    });
+
     const batch = db.batch();
     let updatesCount = 0;
 
-    // Processa cada partida encerrada
     for (const match of finishedMatches) {
-      const matchId = String(match.id);
-      const matchRef = db.collection("partidas").doc(matchId);
+      const homeNorm = normalizeTeamName(match.homeTeam.name);
+      const awayNorm = normalizeTeamName(match.awayTeam.name);
 
-      const docSnap = await matchRef.get();
+      const m = dbMatches.find((x) =>
+        x.h === homeNorm || x.a === awayNorm,
+      );
 
-      if (docSnap.exists) {
-        const currentData = docSnap.data();
+      if (m) {
+        const resultRef = db.collection("results").doc(String(m.id));
+        const resSnap = await resultRef.get();
 
-        // Só atualiza se o status no banco ainda não for "encerrado"
-        if (currentData.status !== "encerrado") {
-          const golsA = match.score.fullTime.home;
-          const golsB = match.score.fullTime.away;
+        const golsHome = match.score.fullTime.home;
+        const golsAway = match.score.fullTime.away;
 
-          batch.update(matchRef, {
-            golsA: golsA,
-            golsB: golsB,
-            status: "encerrado",
-            atualizadoEm: new Date(),
-          });
-
-          updatesCount++;
-          console.log(
-              `Partida ${matchId} pronta: ` +
-              `${match.homeTeam.name} ${golsA} x ${golsB} ` +
-              `${match.awayTeam.name}`,
-          );
+        let shouldUpdate = false;
+        if (!resSnap.exists) {
+          shouldUpdate = true;
+        } else {
+          const rData = resSnap.data();
+          if (rData.home !== golsHome || rData.away !== golsAway ||
+              rData.live !== false) {
+            shouldUpdate = true;
+          }
         }
-      } else {
-        // Opcional: Se a partida não existir no seu banco, pode criá-la aqui
-        console.warn(
-            `Aviso: Partida ID ${matchId} não existe em 'partidas'.`,
-        );
+
+        if (shouldUpdate) {
+          batch.set(resultRef, {
+            home: golsHome,
+            away: golsAway,
+            live: false,
+            kickoffTime: m.ko ? new Date(m.ko) : null,
+            updatedAt: new Date(),
+          }, {merge: true});
+          updatesCount++;
+        }
       }
     }
 
-    // Executa o lote de atualizações no banco de dados
     if (updatesCount > 0) {
       await batch.commit();
-      console.log(
-          `Sucesso: ${updatesCount} partidas atualizadas para 'encerrado'.`,
-      );
+      console.log(`Sucesso: ${updatesCount} resultados atualizados.`);
     } else {
       console.log("Todas as partidas finalizadas já estavam atualizadas.");
     }
