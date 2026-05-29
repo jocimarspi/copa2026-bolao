@@ -15,10 +15,17 @@ export async function recalculateStandings(db) {
       latestResults[d.id] = d.data();
     });
 
+    const businessUnitsSnap = await getDocs(collection(db, "businessUnits"));
+    const unitTotals = {};
+    businessUnitsSnap.forEach(d => {
+      unitTotals[d.id] = { totalPts: 0, memberCount: 0 };
+    });
+
     const usersSnap = await getDocs(collection(db, "users"));
     
     for (const userDoc of usersSnap.docs) {
       const userId = userDoc.id;
+      const uData = userDoc.data();
       const predictionsSnap = await getDocs(collection(db, "users", userId, "predictions"));
       const userPredictions = {};
       predictionsSnap.forEach(d => {
@@ -27,7 +34,24 @@ export async function recalculateStandings(db) {
       
       const newPoints = pts(userPredictions, latestResults);
       await setDoc(doc(db, "users", userId), { pts: newPoints }, { merge: true });
+
+      const unit = uData.unit;
+      if (unit) {
+        if (!unitTotals[unit]) {
+          unitTotals[unit] = { totalPts: 0, memberCount: 0 };
+        }
+        unitTotals[unit].totalPts += newPoints;
+        unitTotals[unit].memberCount += 1;
+      }
     }
+
+    for (const [unitId, stats] of Object.entries(unitTotals)) {
+      await setDoc(doc(db, "businessUnits", unitId), {
+        totalPts: stats.totalPts,
+        memberCount: stats.memberCount
+      }, { merge: true });
+    }
+
     console.log("Standings successfully recalculated!");
   } catch (error) {
     console.error("Error recalculating standings:", error);

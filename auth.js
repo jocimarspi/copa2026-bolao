@@ -1,5 +1,5 @@
 import { signOut, OAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { doc, setDoc, getDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { $ } from "./helpers.js";
 import { state } from "./state.js";
 import { getTranslation } from "./i18n.js";
@@ -85,9 +85,31 @@ window.doCompleteProfile = async () => {
     if (!user) return;
     const m = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
     await m.updateProfile(user, { displayName: n, photoURL: em || "⚽" });
-    const localUser = state.USERS.find(u => u.uid === user.uid);
-    const points = (localUser && localUser.pts !== undefined) ? localUser.pts : 0;
+
+    // Buscar a pontuação atual do usuário diretamente do Firestore
+    const userSnap = await getDoc(doc(db, "users", user.uid));
+    const points = userSnap.exists() ? (userSnap.data().pts || 0) : 0;
+
     await setDoc(doc(db, "users", user.uid), { name: n, emoji: em || "⚽", unit: un, pts: points }, { merge: true });
+
+    // Incrementar/decrementar os acumuladores das unidades se houver mudança
+    const oldUnit = state.MU;
+    const newUnit = un;
+    if (oldUnit !== newUnit) {
+      if (oldUnit) {
+        await setDoc(doc(db, "businessUnits", oldUnit), {
+          totalPts: increment(-points),
+          memberCount: increment(-1)
+        }, { merge: true });
+      }
+      if (newUnit) {
+        await setDoc(doc(db, "businessUnits", newUnit), {
+          totalPts: increment(points),
+          memberCount: increment(1)
+        }, { merge: true });
+      }
+    }
+
     state.MU = un;
     window.GT("ranking");
   } catch (err) {

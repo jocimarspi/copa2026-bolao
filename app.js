@@ -1,12 +1,12 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, getDocs, collection, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, getDocs, collection, onSnapshot, serverTimestamp, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 import { $, getEcosystemStyles } from "./helpers.js";
 import { state, DEFAULT_MATCHES, UNITS } from "./state.js";
 import { initAuth, isAdm } from "./auth.js";
 import { fetchAPI } from "./api.js";
-import { renderLB } from "./leaderboard.js";
+import { renderLB, initLeaderboard } from "./leaderboard.js";
 import { initPalpites, renderMatches, renderPalpites } from "./palpites.js";
 import { initTournament, renderTorneio, renderGrupos } from "./tournament.js";
 import { initAdmin, renderAR, renderAL, renderAS, loadMM, renderAM, loadApiUrl, renderBusinessUnitsList } from "./admin.js";
@@ -34,6 +34,7 @@ initAuth(auth, db);
 initPalpites(db);
 initTournament(db);
 initAdmin(db);
+initLeaderboard(db);
 
 // ── Firestore Listeners ───────────────────────────────────────────────────────
 let unsubResults = null, unsubUsers = null, unsubMatches = null, unsubBusinessUnits = null, unsubAdmins = null;
@@ -127,7 +128,8 @@ function startListeners() {
     if ($("t-grupos")?.classList.contains("tournament-section--active")) renderGrupos();
   }, err => console.warn("Erro listener results:", err));
 
-  unsubUsers = onSnapshot(collection(db, "users"), snap => {
+  const qUsers = query(collection(db, "users"), orderBy("pts", "desc"), limit(10));
+  unsubUsers = onSnapshot(qUsers, snap => {
     state.USERS = [];
     snap.forEach(d => { state.USERS.push({ uid: d.id, ...d.data() }); });
     renderLB();
@@ -157,7 +159,10 @@ function startListeners() {
         text: styles.text,
         cls: `unit-filters__btn--${id}`,
         nome: bu.nome,
-        ecossistema: bu.ecossistema
+        ecossistema: bu.ecossistema,
+        totalPts: bu.totalPts || 0,
+        memberCount: bu.memberCount || 0,
+        avg: bu.memberCount ? (bu.totalPts || 0) / bu.memberCount : 0
       };
     }
 

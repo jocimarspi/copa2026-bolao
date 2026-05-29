@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc, getDocs, collection, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { doc, setDoc, getDoc, getDocs, collection, deleteDoc, serverTimestamp, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { $, TN, FL, isOpen, lockLbl, pts, fmtDT, parseKoDate, escapeHTML } from "./helpers.js";
 import { state, UNITS } from "./state.js";
 import { getTranslation } from "./i18n.js";
@@ -79,11 +79,21 @@ window.deleteAdmin = async (email) => {
   });
 };
 
-export function renderAS() {
+export async function renderAS() {
   const el = $("as"); if (!el) return;
   const done = Object.values(state.RES).filter(r => r.home !== null).length;
-  const un = [...new Set(state.USERS.map(u => u.unit).filter(Boolean))].length;
-  el.innerHTML = `<div class="admin-stats__item"><div class="admin-stats__number">${state.USERS.length}</div><div class="admin-stats__label">${getTranslation("adm_stats_users")}</div></div><div class="admin-stats__item"><div class="admin-stats__number">${done}</div><div class="admin-stats__label">${getTranslation("adm_stats_ended")}</div></div><div class="admin-stats__item"><div class="admin-stats__number">${state.MX.length - done}</div><div class="admin-stats__label">${getTranslation("adm_stats_remaining")}</div></div><div class="admin-stats__item"><div class="admin-stats__number">${un}</div><div class="admin-stats__label">${getTranslation("adm_stats_units")}</div></div>`;
+  const un = Object.keys(UNITS).length;
+  
+  let totalUsers = 0;
+  try {
+    const snap = await getCountFromServer(collection(db, "users"));
+    totalUsers = snap.data().count;
+  } catch (err) {
+    console.error("Erro ao obter contagem de usuários:", err);
+    totalUsers = state.USERS.length;
+  }
+
+  el.innerHTML = `<div class="admin-stats__item"><div class="admin-stats__number">${totalUsers}</div><div class="admin-stats__label">${getTranslation("adm_stats_users")}</div></div><div class="admin-stats__item"><div class="admin-stats__number">${done}</div><div class="admin-stats__label">${getTranslation("adm_stats_ended")}</div></div><div class="admin-stats__item"><div class="admin-stats__number">${state.MX.length - done}</div><div class="admin-stats__label">${getTranslation("adm_stats_remaining")}</div></div><div class="admin-stats__item"><div class="admin-stats__number">${un}</div><div class="admin-stats__label">${getTranslation("adm_stats_units")}</div></div>`;
 }
 
 let PS = null;
