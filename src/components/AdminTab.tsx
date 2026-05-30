@@ -301,7 +301,7 @@ export default function AdminTab() {
           kickoffTime: parseKoDate(m.ko),
           updatedAt: serverTimestamp()
         });
-        await runRecalculation();
+        showModal(t("adm_save_score_success") || "Resultado salvo com sucesso!");
       } catch (err: any) {
         showModal("Erro ao salvar resultado: " + err.message);
       }
