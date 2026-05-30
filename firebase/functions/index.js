@@ -64,10 +64,11 @@ async function recalculateStandings(dbInstance) {
       latestResults[d.id] = d.data();
     });
 
-    const businessUnitsSnap = await dbInstance.collection("businessUnits").get();
+    const businessUnitsSnap = await dbInstance
+        .collection("businessUnits").get();
     const unitTotals = {};
     businessUnitsSnap.forEach((d) => {
-      unitTotals[d.id] = { totalPts: 0, memberCount: 0 };
+      unitTotals[d.id] = {totalPts: 0, memberCount: 0};
     });
 
     const matchesSnap = await dbInstance.collection("matches").get();
@@ -116,7 +117,7 @@ async function recalculateStandings(dbInstance) {
       const unit = userDoc.data().unit;
       if (unit) {
         if (!unitTotals[unit]) {
-          unitTotals[unit] = { totalPts: 0, memberCount: 0 };
+          unitTotals[unit] = {totalPts: 0, memberCount: 0};
         }
         unitTotals[unit].totalPts += newPoints;
         unitTotals[unit].memberCount += 1;
