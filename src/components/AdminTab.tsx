@@ -318,7 +318,7 @@ export default function AdminTab() {
           live: false,
           kickoffTime: m ? parseKoDate(m.ko) : null
         });
-        await runRecalculation();
+        showModal(t("adm_clear_score_success") || "Resultado limpo com sucesso!");
       } catch (err: any) {
         showModal("Erro ao limpar placar: " + err.message);
       }
@@ -402,7 +402,7 @@ export default function AdminTab() {
       try {
         await deleteDoc(doc(db, "matches", String(mid)));
         await deleteDoc(doc(db, "results", String(mid)));
-        await runRecalculation();
+        showModal(t("adm_delete_match_success") || "Partida deletada com sucesso!");
       } catch (err: any) {
         showModal("Erro ao deletar partida: " + err.message);
       }
