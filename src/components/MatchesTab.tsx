@@ -5,15 +5,15 @@ import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { useData, Match } from "../contexts/DataContext";
 import { useModal } from "../contexts/ModalContext";
-import { 
-  isOpen, 
-  lockLbl, 
-  pSt, 
-  pts, 
-  fmtDT, 
-  TN, 
-  getFlagUrl, 
-  parseKoDate 
+import {
+  isOpen,
+  lockLbl,
+  pSt,
+  pts,
+  fmtDT,
+  TN,
+  getFlagUrl,
+  parseKoDate
 } from "../helpers";
 
 interface ScoreInputs {
@@ -254,7 +254,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
       ) : (
         <div className="alert alert--info alert--full-width" style={{ marginBottom: "16px", textAlign: "center" }}>
           {t("pred_not_logged")}{" "}
-          <span 
+          <span
             onClick={() => setCurrentTab("conta")}
             style={{ color: "var(--gold)", cursor: "pointer", textDecoration: "underline", fontWeight: 600 }}
           >
@@ -266,31 +266,31 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
 
       {/* Filters bar */}
       <div className="filters-bar" style={{ display: "flex", gap: "5px", marginBottom: "16px", flexWrap: "wrap" }}>
-        <button 
+        <button
           className={`filter-btn ${currentFilter === "todos" ? "is-active" : ""}`}
           onClick={() => setCurrentFilter("todos")}
         >
           {t("filter_all") || "Todos"}
         </button>
-        <button 
+        <button
           className={`filter-btn ${currentFilter === "R1" ? "is-active" : ""}`}
           onClick={() => setCurrentFilter("R1")}
         >
           {t("pred_r1")}
         </button>
-        <button 
+        <button
           className={`filter-btn ${currentFilter === "R2" ? "is-active" : ""}`}
           onClick={() => setCurrentFilter("R2")}
         >
           {t("pred_r2")}
         </button>
-        <button 
+        <button
           className={`filter-btn ${currentFilter === "R3" ? "is-active" : ""}`}
           onClick={() => setCurrentFilter("R3")}
         >
           {t("pred_r3")}
         </button>
-        <button 
+        <button
           className={`filter-btn ${currentFilter === "teste" ? "is-active" : ""}`}
           onClick={() => setCurrentFilter("teste")}
         >
@@ -328,7 +328,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
                 </span>
               );
             } else if (done) {
-              statusBadge = <span style={{ color: "var(--muted)" }}>{t("pred_ended")}</span>;
+              statusBadge = <span className="status-badge status-badge--win" >{t("pred_ended")}</span>;
             } else if (!op) {
               statusBadge = <span style={{ color: "var(--red)" }}>{t("pred_closed")}</span>;
             } else if (lk) {
@@ -343,7 +343,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
                 predictionBlock = (
                   <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
                     🔒{" "}
-                    <span 
+                    <span
                       onClick={() => setCurrentTab("conta")}
                       style={{ color: "var(--gold)", cursor: "pointer", textDecoration: "underline" }}
                     >
@@ -380,53 +380,53 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
               predictionBlock = (
                 <div className="score-input-row" style={{ display: "flex", flexDirection: "column", gap: "6px", width: "100%", alignItems: "center" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", width: "100%", flexWrap: "wrap", position: "relative" }}>
-                    <input 
-                      className="score-input" 
-                      type="number" 
-                      min="0" 
-                      max="20" 
+                    <input
+                      className="score-input"
+                      type="number"
+                      min="0"
+                      max="20"
                       value={val.home}
                       onChange={(e) => handleInputChange(m.id, "home", e.target.value)}
                       disabled={isSaving}
                     />
                     <span style={{ color: "var(--muted)" }}>×</span>
-                    <input 
-                      className="score-input" 
-                      type="number" 
-                      min="0" 
-                      max="20" 
+                    <input
+                      className="score-input"
+                      type="number"
+                      min="0"
+                      max="20"
                       value={val.away}
                       onChange={(e) => handleInputChange(m.id, "away", e.target.value)}
                       disabled={isSaving}
                     />
-                    
+
                     {isSaving && (
-                      <span style={{ 
+                      <span style={{
                         position: "absolute",
                         left: "0px",
                         top: "50%",
                         transform: "translateY(-50%)",
-                        fontSize: "0.75rem", 
-                        color: "var(--muted)", 
-                        display: "inline-flex", 
-                        alignItems: "center", 
-                        gap: "4px" 
+                        fontSize: "0.75rem",
+                        color: "var(--muted)",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px"
                       }}>
                         ⏳ {t("autosave_saving") || "salvando..."}
                       </span>
                     )}
                     {!isSaving && isSaved && (
-                      <span style={{ 
+                      <span style={{
                         position: "absolute",
                         left: "0px",
                         top: "50%",
                         transform: "translateY(-50%)",
-                        fontSize: "0.75rem", 
-                        color: "#10b981", 
-                        fontWeight: 500, 
-                        display: "inline-flex", 
-                        alignItems: "center", 
-                        gap: "4px" 
+                        fontSize: "0.75rem",
+                        color: "#10b981",
+                        fontWeight: 500,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px"
                       }}>
                         ✅ {t("autosave_saved") || "salvo"}
                       </span>
@@ -435,13 +435,13 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
                     {pred && (
                       <button
                         className="btn--danger"
-                        style={{ 
+                        style={{
                           position: "absolute",
                           right: "0px",
                           top: "50%",
                           transform: "translateY(-50%)",
-                          padding: "4px 8px", 
-                          fontSize: "0.85rem", 
+                          padding: "4px 8px",
+                          fontSize: "0.85rem",
                           borderRadius: "4px"
                         }}
                         onClick={() => handleRemovePrediction(m.id)}
@@ -469,13 +469,13 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
                     {pred && (
                       <button
                         className="btn--danger"
-                        style={{ 
+                        style={{
                           position: "absolute",
                           right: "0px",
                           top: "50%",
                           transform: "translateY(-50%)",
-                          padding: "4px 8px", 
-                          fontSize: "0.85rem", 
+                          padding: "4px 8px",
+                          fontSize: "0.85rem",
                           borderRadius: "4px",
                           opacity: 0.5,
                           cursor: "not-allowed"
