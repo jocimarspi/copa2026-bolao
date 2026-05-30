@@ -340,13 +340,19 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
 
             if (done) {
               predictionBlock = (
-                <div style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
-                  {t("pred_your_label")}{" "}
-                  {pred ? (
-                    <strong>{pred.home} × {pred.away}</strong>
-                  ) : (
-                    <span style={{ color: "var(--muted)" }}>{t("pred_none")}</span>
-                  )}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px", width: "100%" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", width: "100%", flexWrap: "wrap", position: "relative" }}>
+                    <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--gold)" }}>
+                      {pred ? (
+                        `${pred.home} × ${pred.away}`
+                      ) : (
+                        <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: "normal" }}>{t("pred_none")}</span>
+                      )}
+                    </div>
+                  </div>
+                  <span style={{ fontSize: "0.74rem", color: "var(--muted)", fontWeight: 500 }}>
+                    {t("pred_your_label") || "Seu palpite:"}
+                  </span>
                 </div>
               );
             } else if (!user) {
