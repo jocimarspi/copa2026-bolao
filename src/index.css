@@ -909,6 +909,7 @@ main {
   flex-wrap: wrap;
 }
 
+input[type=number].score-input,
 .score-input {
   width: 42px;
   text-align: center;
@@ -923,6 +924,7 @@ main {
   font-family: 'Inter', sans-serif;
 }
 
+input[type=number].score-input:focus,
 .score-input:focus {
   border-color: var(--gold);
 }

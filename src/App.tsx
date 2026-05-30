@@ -19,13 +19,7 @@ function MainAppLayout() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState<boolean>(false);
 
   const isProfileIncomplete = !authLoading && user && (!userProfile || !userProfile.unit);
-
-  // Force incomplete profiles to the account tab
-  useEffect(() => {
-    if (isProfileIncomplete) {
-      setCurrentTab("conta");
-    }
-  }, [isProfileIncomplete]);
+  const activeTabToShow = isProfileIncomplete ? "conta" : currentTab;
 
   if (authLoading || dataLoading) {
     return (
@@ -79,7 +73,7 @@ function MainAppLayout() {
   return (
     <div className="app-container">
       {/* 1. Header component */}
-      <Header currentTab={currentTab} setCurrentTab={setCurrentTab} />
+      <Header currentTab={activeTabToShow} setCurrentTab={setCurrentTab} />
 
       {/* 2. Main content container */}
       <main className="container">
@@ -89,7 +83,7 @@ function MainAppLayout() {
       {/* 3. Mobile Bottom Navigation */}
       <nav className="bottom-nav">
         <button 
-          className={`bottom-nav__btn nav__btn nav__btn--ranking ${currentTab === "ranking" ? "is-active" : ""}`}
+          className={`bottom-nav__btn nav__btn nav__btn--ranking ${activeTabToShow === "ranking" ? "is-active" : ""}`}
           onClick={() => navigateTo("ranking")}
           disabled={!!isProfileIncomplete}
         >
@@ -97,7 +91,7 @@ function MainAppLayout() {
           <span className="bottom-nav__label">{t("nav_ranking_label")}</span>
         </button>
         <button 
-          className={`bottom-nav__btn nav__btn nav__btn--games ${currentTab === "jogos" ? "is-active" : ""}`}
+          className={`bottom-nav__btn nav__btn nav__btn--games ${activeTabToShow === "jogos" ? "is-active" : ""}`}
           onClick={() => navigateTo("jogos")}
           disabled={!!isProfileIncomplete}
         >
@@ -105,14 +99,14 @@ function MainAppLayout() {
           <span className="bottom-nav__label">{t("nav_games_label")}</span>
         </button>
         <button 
-          className={`bottom-nav__btn nav__btn nav__btn--account ${currentTab === "conta" ? "is-active" : ""}`}
+          className={`bottom-nav__btn nav__btn nav__btn--account ${activeTabToShow === "conta" ? "is-active" : ""}`}
           onClick={() => navigateTo("conta")}
         >
           <span className="bottom-nav__icon">👤</span>
           <span className="bottom-nav__label">{t("nav_account_label")}</span>
         </button>
         <button 
-          className={`bottom-nav__btn ${["duvidas", "historico", "admin"].includes(currentTab) ? "is-active" : ""}`}
+          className={`bottom-nav__btn ${["duvidas", "historico", "admin"].includes(activeTabToShow) ? "is-active" : ""}`}
           id="mobile-menu-btn"
           onClick={() => setMobileDrawerOpen(true)}
           disabled={!!isProfileIncomplete}
@@ -135,14 +129,14 @@ function MainAppLayout() {
           </div>
           <div className="drawer__body">
             <button 
-              className={`drawer__btn nav__btn nav__btn--faq ${currentTab === "duvidas" ? "is-active" : ""}`}
+              className={`drawer__btn nav__btn nav__btn--faq ${activeTabToShow === "duvidas" ? "is-active" : ""}`}
               onClick={() => navigateTo("duvidas")}
             >
               <span className="drawer__btn-icon">❓</span>
               <span className="drawer__btn-text">{t("nav_faq_label")}</span>
             </button>
             <button 
-              className={`drawer__btn nav__btn nav__btn--history ${currentTab === "historico" ? "is-active" : ""}`}
+              className={`drawer__btn nav__btn nav__btn--history ${activeTabToShow === "historico" ? "is-active" : ""}`}
               onClick={() => navigateTo("historico")}
             >
               <span className="drawer__btn-icon">📅</span>
@@ -150,7 +144,7 @@ function MainAppLayout() {
             </button>
             {isAdmin && (
               <button 
-                className={`drawer__btn nav__btn nav__btn--admin drawer__btn--admin is-visible ${currentTab === "admin" ? "is-active" : ""}`}
+                className={`drawer__btn nav__btn nav__btn--admin drawer__btn--admin is-visible ${activeTabToShow === "admin" ? "is-active" : ""}`}
                 onClick={() => navigateTo("admin")}
                 id="drawer-nav-adm"
               >
