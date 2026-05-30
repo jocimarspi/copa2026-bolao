@@ -32,5 +32,6 @@
     "globals": "^17.6.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.12"
-  }
+  },
+  "packageManager": "yarn@3.8.7"
 }
