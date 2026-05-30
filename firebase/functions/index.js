@@ -1,6 +1,5 @@
 const {onSchedule} = require("firebase-functions/v2/scheduler");
 const {onRequest} = require("firebase-functions/v2/https");
-const {onDocumentWritten} = require("firebase-functions/v2/firestore");
 const {initializeApp} = require("firebase-admin/app");
 const {getFirestore} = require("firebase-admin/firestore");
 const {getAuth} = require("firebase-admin/auth");
@@ -139,16 +138,6 @@ async function recalculateStandings(dbInstance) {
   }
 }
 
-/**
- * Cloud Function acionada quando um resultado é atualizado no Firestore.
- */
-exports.onResultWritten = onDocumentWritten(
-    "results/{matchId}",
-    async (event) => {
-      console.log(`Result for ${event.params.matchId} updated.`);
-      await recalculateStandings(db);
-    },
-);
 
 /**
  * Cloud Function agendada para rodar a cada 15 minutos.
@@ -241,6 +230,7 @@ exports.atualizarResultadosBolao = onSchedule("*/15 * * * *", async (event) => {
     if (updatesCount > 0) {
       await batch.commit();
       console.log(`Sucesso: ${updatesCount} resultados atualizados.`);
+      await recalculateStandings(db);
     } else {
       console.log("Todas as partidas finalizadas já estavam atualizadas.");
     }
