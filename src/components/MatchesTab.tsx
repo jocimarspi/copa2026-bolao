@@ -31,18 +31,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
   const [inputs, setInputs] = useState<Record<number, ScoreInputs>>({});
   const [savingIds, setSavingIds] = useState<Set<number>>(new Set());
 
-  // Check if daily prediction window is open (08:00 - 15:30 UTC)
-  const isDailyWindowOpen = (): boolean => {
-    const now = new Date();
-    const utcH = now.getUTCHours();
-    const utcM = now.getUTCMinutes();
-    const minUTC = utcH * 60 + utcM;
-    const abre = 8 * 60; // 08:00 UTC
-    const fecha = 15 * 60 + 30; // 15:30 UTC
-    return minUTC >= abre && minUTC < fecha;
-  };
 
-  const windowOpen = isDailyWindowOpen();
 
   // Populate local inputs from database predictions
   useEffect(() => {
@@ -81,10 +70,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
       return;
     }
 
-    if (!windowOpen) {
-      showModal(t("alert_window_closed") || "A janela de palpites está fechada agora. Palpites só podem ser salvos das 05:00 às 12:30h.");
-      return;
-    }
+
 
     const score = inputs[mid];
     const h = parseInt(score?.home);
@@ -150,18 +136,10 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
 
   return (
     <div className="tab tab--active">
-      {/* Daily Window Warning Banner */}
-      {!windowOpen && (
-        <div className="alert alert--danger alert--full-width" style={{ marginBottom: "16px", textAlign: "center" }}>
-          🔒 <strong>{t("window_closed_title") || "Janela de Palpites Fechada"}</strong>: {t("window_closed_desc") || "O sistema só aceita palpites das 05:00h às 12:30h (Horário de Brasília) / 08:00 às 15:30 UTC."}
-        </div>
-      )}
-
-      {windowOpen && (
-        <div className="alert alert--success alert--full-width" style={{ marginBottom: "16px", textAlign: "center" }}>
-          🟢 <strong>{t("window_open_title") || "Janela de Palpites Aberta"}</strong>: {t("window_open_desc") || "Palpites liberados até 30 minutos antes do início de cada jogo."}
-        </div>
-      )}
+      {/* Prediction Window Info Banner */}
+      <div className="alert alert--success alert--full-width" style={{ marginBottom: "16px", textAlign: "center" }}>
+        🟢 <strong>{t("window_open_title") || "Regra de Palpites"}</strong>: {t("window_open_desc") || "Palpites liberados até 30 minutos antes do início de cada jogo."}
+      </div>
 
       {/* Points summary banner */}
       {user ? (
@@ -289,7 +267,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
               const val = inputs[m.id] || { home: "", away: "" };
               const isSaving = savingIds.has(m.id);
               const hasChanged = pred ? (val.home !== pred.home.toString() || val.away !== pred.away.toString()) : (val.home !== "" || val.away !== "");
-              const isBtnDisabled = isSaving || !windowOpen || !hasChanged;
+              const isBtnDisabled = isSaving || !hasChanged;
 
               predictionBlock = (
                 <div className="score-input-row">
@@ -301,7 +279,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
                     max="20" 
                     value={val.home}
                     onChange={(e) => handleInputChange(m.id, "home", e.target.value)}
-                    disabled={isSaving || !windowOpen}
+                    disabled={isSaving}
                     placeholder="0"
                   />
                   <span style={{ color: "var(--muted)" }}>×</span>
@@ -312,7 +290,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
                     max="20" 
                     value={val.away}
                     onChange={(e) => handleInputChange(m.id, "away", e.target.value)}
-                    disabled={isSaving || !windowOpen}
+                    disabled={isSaving}
                     placeholder="0"
                   />
                   <button 
