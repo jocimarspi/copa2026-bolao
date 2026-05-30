@@ -32,7 +32,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
   const [savingIds, setSavingIds] = useState<Set<number>>(new Set());
   const [saveStatus, setSaveStatus] = useState<Record<number, "idle" | "saving" | "saved" | "error">>({});
 
-  const saveTimers = React.useRef<Record<number, NodeJS.Timeout>>({});
+  const saveTimers = React.useRef<Record<number, any>>({});
 
   // Cleanup timers on unmount
   useEffect(() => {
@@ -338,24 +338,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
             // Predictions HTML Render Block
             let predictionBlock = null;
 
-            if (done) {
-              predictionBlock = (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px", width: "100%" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", width: "100%", flexWrap: "wrap", position: "relative" }}>
-                    <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--gold)" }}>
-                      {pred ? (
-                        `${pred.home} × ${pred.away}`
-                      ) : (
-                        <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: "normal" }}>{t("pred_none")}</span>
-                      )}
-                    </div>
-                  </div>
-                  <span style={{ fontSize: "0.74rem", color: "var(--muted)", fontWeight: 500 }}>
-                    {t("pred_your_label") || "Seu palpite:"}
-                  </span>
-                </div>
-              );
-            } else if (!user) {
+            if (!user) {
               if (op) {
                 predictionBlock = (
                   <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
@@ -372,6 +355,23 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
               } else {
                 predictionBlock = <div style={{ fontSize: "0.75rem", color: "var(--red)", fontWeight: 600 }}>{t("pred_closed")}</div>;
               }
+            } else if (done) {
+              predictionBlock = (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px", width: "100%" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", width: "100%", flexWrap: "wrap", position: "relative" }}>
+                    <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--gold)" }}>
+                      {pred ? (
+                        `${pred.home} × ${pred.away}`
+                      ) : (
+                        <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: "normal" }}>{t("pred_none")}</span>
+                      )}
+                    </div>
+                  </div>
+                  <span style={{ fontSize: "0.74rem", color: "var(--muted)", fontWeight: 500 }}>
+                    {t("pred_your_label") || "Seu palpite:"}
+                  </span>
+                </div>
+              );
             } else if (op) {
               const val = inputs[m.id] || { home: "", away: "" };
               const isSaving = savingIds.has(m.id) || saveStatus[m.id] === "saving";
