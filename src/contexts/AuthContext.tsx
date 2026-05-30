@@ -73,6 +73,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     if (!user) return;
 
+    setLoading(true);
+
     const unsubscribeProfile = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
       if (docSnap.exists()) {
         setUserProfile(docSnap.data() as UserProfile);

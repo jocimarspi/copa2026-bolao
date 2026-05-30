@@ -18,7 +18,7 @@ function MainAppLayout() {
   const [currentTab, setCurrentTab] = useState<string>("ranking");
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState<boolean>(false);
 
-  const isProfileIncomplete = user && (!userProfile || !userProfile.unit);
+  const isProfileIncomplete = !authLoading && user && (!userProfile || !userProfile.unit);
 
   // Force incomplete profiles to the account tab
   useEffect(() => {
