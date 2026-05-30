@@ -88,9 +88,11 @@ export default function AccountTab({ setCurrentTab }: AccountTabProps) {
                 {t(authError) || authError}
               </div>
             )}
-            <div className="alert alert--info" style={{ marginBottom: "20px", fontSize: ".76rem", textAlign: "center" }}>
-              {t("login_info")}
-            </div>
+            <div 
+              className="alert alert--info" 
+              style={{ marginBottom: "20px", fontSize: ".76rem", textAlign: "center" }}
+              dangerouslySetInnerHTML={{ __html: t("login_info") }}
+            />
             <button 
               className="btn btn--microsoft" 
               style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}

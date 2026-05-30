@@ -51,9 +51,11 @@ export default function HistoryTab() {
   return (
     <div className="tab tab--active">
       <div className="section-title">{t("history_title")}</div>
-      <div className="alert alert--warning" style={{ marginBottom: "14px" }}>
-        🧪 {t("history_info")}
-      </div>
+      <div 
+        className="alert alert--warning" 
+        style={{ marginBottom: "14px" }}
+        dangerouslySetInnerHTML={{ __html: t("history_info") }}
+      />
 
       {!hasContent ? (
         <div style={{ color: "var(--muted)", textAlign: "center", padding: "36px" }}>

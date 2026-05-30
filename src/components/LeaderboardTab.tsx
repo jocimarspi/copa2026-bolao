@@ -213,9 +213,11 @@ export default function LeaderboardTab() {
       <div className="section-title" style={{ marginTop: "28px" }}>
         {t("ranking_units")}
       </div>
-      <div className="alert alert--info" style={{ marginBottom: "12px" }}>
-        {t("ranking_info")}
-      </div>
+      <div 
+        className="alert alert--info" 
+        style={{ marginBottom: "12px" }}
+        dangerouslySetInnerHTML={{ __html: t("ranking_info") }}
+      />
 
       <div className="leaderboard">
         {dataLoading ? (
