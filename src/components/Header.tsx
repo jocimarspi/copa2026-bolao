@@ -53,6 +53,8 @@ export default function Header({ currentTab, setCurrentTab }: HeaderProps) {
   const myRankIndex = user ? sortedAllUsers.findIndex(u => u.uid === user.uid) : -1;
   const myRank = myRankIndex !== -1 ? myRankIndex + 1 : null;
 
+  const isProfileIncomplete = !!(user && (!userProfile || !userProfile.unit));
+
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newLang = e.target.value;
     i18n.changeLanguage(newLang);
@@ -60,6 +62,7 @@ export default function Header({ currentTab, setCurrentTab }: HeaderProps) {
   };
 
   const navigateTo = (tab: string) => {
+    if (isProfileIncomplete && tab !== "conta") return;
     setCurrentTab(tab);
     setDropdownOpen(false);
   };
@@ -69,7 +72,11 @@ export default function Header({ currentTab, setCurrentTab }: HeaderProps) {
   return (
     <header>
       <div className="header__inner">
-        <div className="header__logo" onClick={() => navigateTo("ranking")} style={{ cursor: "pointer" }}>
+        <div 
+          className="header__logo" 
+          onClick={() => !isProfileIncomplete && navigateTo("ranking")} 
+          style={{ cursor: isProfileIncomplete ? "default" : "pointer" }}
+        >
           WE ARE <span>DB1</span>
           <small>{t("logo_sub")}</small>
         </div>
@@ -78,37 +85,40 @@ export default function Header({ currentTab, setCurrentTab }: HeaderProps) {
           <button 
             className={`nav__btn nav__btn--ranking ${currentTab === "ranking" ? "is-active" : ""}`}
             onClick={() => navigateTo("ranking")}
+            disabled={isProfileIncomplete}
           >
             {t("nav_ranking")}
           </button>
           <button 
             className={`nav__btn nav__btn--games ${currentTab === "jogos" ? "is-active" : ""}`}
             onClick={() => navigateTo("jogos")}
+            disabled={isProfileIncomplete}
           >
             {t("nav_games")}
           </button>
 
-          <div className="nav__dropdown">
+          <div className={`nav__dropdown ${isProfileIncomplete ? "nav__dropdown--disabled" : ""}`}>
             <button 
               className={`nav__btn nav__btn--more ${["conta", "duvidas", "historico", "admin"].includes(currentTab) ? "is-active" : ""}`}
               id="nav-more-btn"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
+              onClick={() => !isProfileIncomplete && setDropdownOpen(!dropdownOpen)}
+              disabled={isProfileIncomplete}
             >
               {t("nav_more")}
             </button>
-            {dropdownOpen && (
+            {dropdownOpen && !isProfileIncomplete && (
               <div className="nav__dropdown-content" style={{ display: "block" }}>
-                <button className="nav__btn nav__btn--account" onClick={() => navigateTo("conta")}>
+                <button className="nav__btn nav__btn--account" onClick={() => navigateTo("conta")} disabled={isProfileIncomplete}>
                   {t("nav_account")}
                 </button>
-                <button className="nav__btn nav__btn--faq" onClick={() => navigateTo("duvidas")}>
+                <button className="nav__btn nav__btn--faq" onClick={() => navigateTo("duvidas")} disabled={isProfileIncomplete}>
                   {t("nav_faq")}
                 </button>
-                <button className="nav__btn nav__btn--history" onClick={() => navigateTo("historico")}>
+                <button className="nav__btn nav__btn--history" onClick={() => navigateTo("historico")} disabled={isProfileIncomplete}>
                   {t("nav_history")}
                 </button>
                 {isAdmin && (
-                  <button className="nav__btn nav__btn--admin is-visible" onClick={() => navigateTo("admin")}>
+                  <button className="nav__btn nav__btn--admin is-visible" onClick={() => navigateTo("admin")} disabled={isProfileIncomplete}>
                     {t("nav_admin")}
                   </button>
                 )}
@@ -119,7 +129,11 @@ export default function Header({ currentTab, setCurrentTab }: HeaderProps) {
 
         <div id="us" className={user ? "is-logged-in" : ""}>
           {user ? (
-            <div className="header__avatar" onClick={() => navigateTo("conta")}>
+            <div 
+              className="header__avatar" 
+              onClick={() => navigateTo("conta")}
+              style={{ cursor: "pointer" }}
+            >
               {initials}
             </div>
           ) : (
@@ -129,7 +143,7 @@ export default function Header({ currentTab, setCurrentTab }: HeaderProps) {
           )}
         </div>
 
-        {user && userProfile !== undefined && (
+        {user && !isProfileIncomplete && userProfile !== undefined && (
           <div className="header__points" onClick={() => navigateTo("conta")}>
             {myRank !== null && (
               <>

@@ -125,6 +125,19 @@ nav {
   color: #fff;
 }
 
+.nav__btn:disabled,
+.nav__btn:disabled:hover,
+.bottom-nav__btn:disabled,
+.bottom-nav__btn:disabled:hover {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--muted) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .nav__btn--ranking.is-active,
 .nav__btn--ranking:hover {
   background: var(--ms);
@@ -245,7 +258,7 @@ nav {
   display: block !important;
 }
 
-.nav__dropdown:hover .nav__dropdown-content {
+.nav__dropdown:not(.nav__dropdown--disabled):hover .nav__dropdown-content {
   display: block;
 }
 
