@@ -452,12 +452,11 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
               predictionBlock = (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px", width: "100%" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", width: "100%", flexWrap: "wrap", position: "relative" }}>
-                    <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
-                      {t("pred_your_label")}{" "}
+                    <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--gold)" }}>
                       {pred ? (
-                        <strong>{pred.home} × {pred.away}</strong>
+                        `${pred.home} × ${pred.away}`
                       ) : (
-                        <span style={{ color: "var(--muted)" }}>{t("pred_none")}</span>
+                        <span style={{ fontSize: "0.75rem", color: "var(--muted)", fontWeight: "normal" }}>{t("pred_none")}</span>
                       )}
                     </div>
                     {pred && (
@@ -480,7 +479,12 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
                       </button>
                     )}
                   </div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--red)", fontWeight: 600 }}>{t("pred_closed")}</div>
+                  <span style={{ fontSize: "0.74rem", color: "var(--muted)", fontWeight: 500 }}>
+                    {t("pred_your_label") || "Seu palpite:"}
+                  </span>
+                  <div style={{ fontSize: "0.75rem", color: "var(--red)", fontWeight: 600, marginTop: "2px" }}>
+                    {t("pred_closed")}
+                  </div>
                 </div>
               );
             }
