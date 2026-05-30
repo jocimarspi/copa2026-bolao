@@ -294,7 +294,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
           className={`filter-btn ${currentFilter === "teste" ? "is-active" : ""}`}
           onClick={() => setCurrentFilter("teste")}
         >
-          🧪 {t("filter_tests") || "Testes"}
+          🧪 {t("filter_test") || "Testes"}
         </button>
       </div>
 
