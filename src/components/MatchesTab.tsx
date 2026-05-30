@@ -440,14 +440,15 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
                           right: "0px",
                           top: "50%",
                           transform: "translateY(-50%)",
-                          padding: "3px 8px", 
-                          fontSize: "0.7rem", 
+                          padding: "4px 8px", 
+                          fontSize: "0.85rem", 
                           borderRadius: "4px"
                         }}
                         onClick={() => handleRemovePrediction(m.id)}
                         disabled={isSaving}
+                        title={t("btn_remove_prediction") || "Remover"}
                       >
-                        🗑️ {t("btn_remove_prediction") || "Remover"}
+                        🗑️
                       </button>
                     )}
                   </div>
@@ -473,15 +474,16 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
                           right: "0px",
                           top: "50%",
                           transform: "translateY(-50%)",
-                          padding: "3px 8px", 
-                          fontSize: "0.7rem", 
+                          padding: "4px 8px", 
+                          fontSize: "0.85rem", 
                           borderRadius: "4px",
                           opacity: 0.5,
                           cursor: "not-allowed"
                         }}
                         disabled={true}
+                        title={t("btn_remove_prediction") || "Remover"}
                       >
-                        🗑️ {t("btn_remove_prediction") || "Remover"}
+                        🗑️
                       </button>
                     )}
                   </div>
