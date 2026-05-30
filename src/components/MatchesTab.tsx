@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { useData, Match } from "../contexts/DataContext";
@@ -30,33 +30,139 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
   const [currentFilter, setCurrentFilter] = useState<string>("todos");
   const [inputs, setInputs] = useState<Record<number, ScoreInputs>>({});
   const [savingIds, setSavingIds] = useState<Set<number>>(new Set());
+  const [saveStatus, setSaveStatus] = useState<Record<number, "idle" | "saving" | "saved" | "error">>({});
 
+  const saveTimers = React.useRef<Record<number, NodeJS.Timeout>>({});
 
-
-  // Populate local inputs from database predictions
+  // Cleanup timers on unmount
   useEffect(() => {
-    const nextInputs: Record<number, ScoreInputs> = {};
-    matches.forEach(m => {
-      const pred = predictions[m.id];
-      nextInputs[m.id] = {
-        home: pred ? pred.home.toString() : "",
-        away: pred ? pred.away.toString() : ""
-      };
+    return () => {
+      Object.values(saveTimers.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  // Populate local inputs from database predictions, without overwriting actively modified ones
+  useEffect(() => {
+    setInputs(prev => {
+      const next = { ...prev };
+      matches.forEach(m => {
+        if (saveTimers.current[m.id] || savingIds.has(m.id) || saveStatus[m.id] === "saving") {
+          return;
+        }
+        const pred = predictions[m.id];
+        next[m.id] = {
+          home: pred ? pred.home.toString() : "",
+          away: pred ? pred.away.toString() : ""
+        };
+      });
+      return next;
     });
-    setInputs(nextInputs);
   }, [predictions, matches]);
 
   const handleInputChange = (mid: number, side: "home" | "away", val: string) => {
-    setInputs(prev => ({
-      ...prev,
-      [mid]: {
-        ...prev[mid],
-        [side]: val
+    setInputs(prev => {
+      const updatedInputs = {
+        ...prev,
+        [mid]: {
+          ...prev[mid],
+          [side]: val
+        }
+      };
+
+      const score = updatedInputs[mid];
+      const h = parseInt(score.home);
+      const a = parseInt(score.away);
+      const isValid = !isNaN(h) && !isNaN(a) && h >= 0 && a >= 0;
+
+      const pred = predictions[mid];
+      const hasChanged = pred
+        ? (score.home !== pred.home.toString() || score.away !== pred.away.toString())
+        : (score.home !== "" || score.away !== "");
+
+      if (isValid && hasChanged) {
+        if (saveTimers.current[mid]) {
+          clearTimeout(saveTimers.current[mid]);
+        }
+
+        setSaveStatus(prevStatus => ({
+          ...prevStatus,
+          [mid]: "saving"
+        }));
+
+        saveTimers.current[mid] = setTimeout(() => {
+          performAutosave(mid, h, a);
+        }, 800);
+      } else {
+        if (saveTimers.current[mid]) {
+          clearTimeout(saveTimers.current[mid]);
+          delete saveTimers.current[mid];
+        }
+
+        setSaveStatus(prevStatus => ({
+          ...prevStatus,
+          [mid]: !hasChanged && pred ? "saved" : "idle"
+        }));
       }
-    }));
+
+      return updatedInputs;
+    });
   };
 
-  const handleSavePrediction = async (mid: number) => {
+  const performAutosave = async (mid: number, h: number, a: number) => {
+    if (!user) {
+      showModal(t("alert_need_login"));
+      setSaveStatus(prev => ({ ...prev, [mid]: "error" }));
+      return;
+    }
+
+    const m = matches.find(x => x.id === mid);
+    if (!m) return;
+
+    if (!isOpen(m)) {
+      showModal(t("alert_pred_closed"));
+      setSaveStatus(prev => ({ ...prev, [mid]: "error" }));
+      return;
+    }
+
+    setSavingIds(prev => {
+      const next = new Set(prev);
+      next.add(mid);
+      return next;
+    });
+
+    try {
+      await setDoc(doc(db, "users", user.uid, "predictions", String(mid)), { home: h, away: a });
+
+      const updatedPredictions = {
+        ...predictions,
+        [mid]: { home: h, away: a }
+      };
+      const newTotalPoints = pts(updatedPredictions, results, matches);
+
+      await setDoc(doc(db, "users", user.uid), { pts: newTotalPoints }, { merge: true });
+
+      setSaveStatus(prev => ({ ...prev, [mid]: "saved" }));
+    } catch (err: any) {
+      console.error("Autosave error:", err);
+      setSaveStatus(prev => ({ ...prev, [mid]: "error" }));
+      if (err.code === "permission-denied") {
+        showModal(t("alert_pred_closed") || "Palpite encerrado no servidor!");
+      } else {
+        showModal(t("alert_error_save") + err.message);
+      }
+    } finally {
+      setSavingIds(prev => {
+        const next = new Set(prev);
+        next.delete(mid);
+        return next;
+      });
+      if (saveTimers.current[mid]) {
+        delete saveTimers.current[mid];
+      }
+    }
+  };
+
+  const handleRemovePrediction = async (mid: number) => {
     if (!user) {
       showModal(t("alert_need_login"));
       return;
@@ -70,18 +176,11 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
       return;
     }
 
-
-
-    const score = inputs[mid];
-    const h = parseInt(score?.home);
-    const a = parseInt(score?.away);
-
-    if (isNaN(h) || isNaN(a) || h < 0 || a < 0) {
-      showModal(t("alert_invalid_score"));
-      return;
+    if (saveTimers.current[mid]) {
+      clearTimeout(saveTimers.current[mid]);
+      delete saveTimers.current[mid];
     }
 
-    // Set saving state
     setSavingIds(prev => {
       const next = new Set(prev);
       next.add(mid);
@@ -89,24 +188,28 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
     });
 
     try {
-      // 1. Save prediction subcollection
-      await setDoc(doc(db, "users", user.uid, "predictions", String(mid)), { home: h, away: a });
+      await deleteDoc(doc(db, "users", user.uid, "predictions", String(mid)));
 
-      // 2. Compute new total points including this updated prediction locally to avoid delay
-      const updatedPredictions = {
-        ...predictions,
-        [mid]: { home: h, away: a }
-      };
+      const updatedPredictions = { ...predictions };
+      delete updatedPredictions[mid];
       const newTotalPoints = pts(updatedPredictions, results, matches);
 
-      // 3. Update main profile doc
       await setDoc(doc(db, "users", user.uid), { pts: newTotalPoints }, { merge: true });
+
+      setInputs(prev => ({
+        ...prev,
+        [mid]: { home: "", away: "" }
+      }));
+      setSaveStatus(prev => ({
+        ...prev,
+        [mid]: "idle"
+      }));
     } catch (err: any) {
-      console.error(err);
+      console.error("Remove prediction error:", err);
       if (err.code === "permission-denied") {
-        showModal(t("alert_pred_closed") || "Palpite encerrado no servidor! Tempo limite ou janela de palpites expirados.");
+        showModal(t("alert_pred_closed") || "Palpite encerrado no servidor!");
       } else {
-        showModal(t("alert_error_save") + err.message);
+        showModal((t("alert_error_remove") || "Erro ao remover palpite: ") + err.message);
       }
     } finally {
       setSavingIds(prev => {
@@ -265,56 +368,120 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
               }
             } else if (op) {
               const val = inputs[m.id] || { home: "", away: "" };
-              const isSaving = savingIds.has(m.id);
-              const hasChanged = pred ? (val.home !== pred.home.toString() || val.away !== pred.away.toString()) : (val.home !== "" || val.away !== "");
-              const isBtnDisabled = isSaving || !hasChanged;
+              const isSaving = savingIds.has(m.id) || saveStatus[m.id] === "saving";
+              const isSaved = pred && val.home === pred.home.toString() && val.away === pred.away.toString();
 
               predictionBlock = (
-                <div className="score-input-row">
-                  {t("pred_label")}{" "}
-                  <input 
-                    className="score-input" 
-                    type="number" 
-                    min="0" 
-                    max="20" 
-                    value={val.home}
-                    onChange={(e) => handleInputChange(m.id, "home", e.target.value)}
-                    disabled={isSaving}
-                    placeholder="0"
-                  />
-                  <span style={{ color: "var(--muted)" }}>×</span>
-                  <input 
-                    className="score-input" 
-                    type="number" 
-                    min="0" 
-                    max="20" 
-                    value={val.away}
-                    onChange={(e) => handleInputChange(m.id, "away", e.target.value)}
-                    disabled={isSaving}
-                    placeholder="0"
-                  />
-                  <button 
-                    className={`btn btn--sm ${isSaving ? "btn--loading" : ""}`}
-                    onClick={() => handleSavePrediction(m.id)}
-                    disabled={isBtnDisabled}
-                  >
-                    {isSaving ? "..." : (pred ? t("btn_update") : t("btn_save"))}
-                  </button>
+                <div className="score-input-row" style={{ display: "flex", flexDirection: "column", gap: "6px", width: "100%", alignItems: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", width: "100%", flexWrap: "wrap", position: "relative" }}>
+                    <input 
+                      className="score-input" 
+                      type="number" 
+                      min="0" 
+                      max="20" 
+                      value={val.home}
+                      onChange={(e) => handleInputChange(m.id, "home", e.target.value)}
+                      disabled={isSaving}
+                    />
+                    <span style={{ color: "var(--muted)" }}>×</span>
+                    <input 
+                      className="score-input" 
+                      type="number" 
+                      min="0" 
+                      max="20" 
+                      value={val.away}
+                      onChange={(e) => handleInputChange(m.id, "away", e.target.value)}
+                      disabled={isSaving}
+                    />
+                    
+                    {isSaving && (
+                      <span style={{ 
+                        position: "absolute",
+                        left: "0px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        fontSize: "0.75rem", 
+                        color: "var(--muted)", 
+                        display: "inline-flex", 
+                        alignItems: "center", 
+                        gap: "4px" 
+                      }}>
+                        ⏳ {t("autosave_saving") || "salvando..."}
+                      </span>
+                    )}
+                    {!isSaving && isSaved && (
+                      <span style={{ 
+                        position: "absolute",
+                        left: "0px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        fontSize: "0.75rem", 
+                        color: "#10b981", 
+                        fontWeight: 500, 
+                        display: "inline-flex", 
+                        alignItems: "center", 
+                        gap: "4px" 
+                      }}>
+                        ✅ {t("autosave_saved") || "salvo"}
+                      </span>
+                    )}
+
+                    {pred && (
+                      <button
+                        className="btn--danger"
+                        style={{ 
+                          position: "absolute",
+                          right: "0px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          padding: "3px 8px", 
+                          fontSize: "0.7rem", 
+                          borderRadius: "4px"
+                        }}
+                        onClick={() => handleRemovePrediction(m.id)}
+                        disabled={isSaving}
+                      >
+                        🗑️ {t("btn_remove_prediction") || "Remover"}
+                      </button>
+                    )}
+                  </div>
+                  <span style={{ fontSize: "0.74rem", color: "var(--muted)", fontWeight: 500 }}>{t("pred_label") || "Palpite:"}</span>
                 </div>
               );
             } else {
               predictionBlock = (
-                <>
-                  <div style={{ fontSize: "0.75rem", color: "var(--red)", fontWeight: 600 }}>{t("pred_closed")}</div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "2px" }}>
-                    {t("pred_your_label")}{" "}
-                    {pred ? (
-                      <strong>{pred.home} × {pred.away}</strong>
-                    ) : (
-                      <span style={{ color: "var(--muted)" }}>{t("pred_none")}</span>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px", width: "100%" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", width: "100%", flexWrap: "wrap", position: "relative" }}>
+                    <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
+                      {t("pred_your_label")}{" "}
+                      {pred ? (
+                        <strong>{pred.home} × {pred.away}</strong>
+                      ) : (
+                        <span style={{ color: "var(--muted)" }}>{t("pred_none")}</span>
+                      )}
+                    </div>
+                    {pred && (
+                      <button
+                        className="btn--danger"
+                        style={{ 
+                          position: "absolute",
+                          right: "0px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          padding: "3px 8px", 
+                          fontSize: "0.7rem", 
+                          borderRadius: "4px",
+                          opacity: 0.5,
+                          cursor: "not-allowed"
+                        }}
+                        disabled={true}
+                      >
+                        🗑️ {t("btn_remove_prediction") || "Remover"}
+                      </button>
                     )}
                   </div>
-                </>
+                  <div style={{ fontSize: "0.75rem", color: "var(--red)", fontWeight: 600 }}>{t("pred_closed")}</div>
+                </div>
               );
             }
 

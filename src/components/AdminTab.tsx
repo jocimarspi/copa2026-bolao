@@ -800,7 +800,6 @@ export default function AdminTab() {
                           className="score-input" 
                           type="number"
                           style={{ width: "42px", textAlign: "center" }} 
-                          placeholder="0"
                           value={j.gh !== null && j.gh !== undefined ? j.gh : ""}
                           onChange={(e) => handleMmValueChange(f.key, idx, "gh", e.target.value)}
                         />
@@ -809,7 +808,6 @@ export default function AdminTab() {
                           className="score-input" 
                           type="number"
                           style={{ width: "42px", textAlign: "center" }} 
-                          placeholder="0"
                           value={j.ga !== null && j.ga !== undefined ? j.ga : ""}
                           onChange={(e) => handleMmValueChange(f.key, idx, "ga", e.target.value)}
                         />
@@ -1006,7 +1004,6 @@ export default function AdminTab() {
                               type="number" 
                               value={scoresVal.home}
                               onChange={(e) => handleScoreResultChange(m.id, "home", e.target.value)}
-                              placeholder="0" 
                               style={{ width: "42px", padding: "4px", textAlign: "center" }} 
                             />
                             <span style={{ color: "var(--muted)" }}>×</span>
@@ -1015,7 +1012,6 @@ export default function AdminTab() {
                               type="number" 
                               value={scoresVal.away}
                               onChange={(e) => handleScoreResultChange(m.id, "away", e.target.value)}
-                              placeholder="0" 
                               style={{ width: "42px", padding: "4px", textAlign: "center" }} 
                             />
                           </div>
