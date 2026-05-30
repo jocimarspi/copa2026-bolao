@@ -299,7 +299,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
       </div>
 
       {/* Match cards list */}
-      <div id="ml">
+      <div id="ml" className="match-list-grid">
         {filteredMatches.length === 0 ? (
           <div style={{ textAlign: "center", padding: "24px", color: "var(--muted)" }}>
             Nenhum jogo encontrado para este filtro.

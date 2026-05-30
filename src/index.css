@@ -1440,9 +1440,15 @@ select option {
 /* ── Unified Match Card & Filters ── */
 .match-list-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: 1fr;
   gap: 16px;
   margin-top: 12px;
+}
+
+@media (min-width: 1024px) {
+  .match-list-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .alert--full-width {
