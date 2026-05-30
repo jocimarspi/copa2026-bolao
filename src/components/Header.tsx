@@ -45,7 +45,7 @@ function getOrdinalRank(rank: number, lang: string): string {
 
 export default function Header({ currentTab, setCurrentTab }: HeaderProps) {
   const { t, i18n } = useTranslation();
-  const { user, isAdmin, userProfile } = useAuth();
+  const { user, isAdmin, userProfile, loginWithMicrosoft } = useAuth();
   const { users } = useData();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -137,7 +137,7 @@ export default function Header({ currentTab, setCurrentTab }: HeaderProps) {
               {initials}
             </div>
           ) : (
-            <button className="btn btn--sm" onClick={() => navigateTo("conta")}>
+            <button className="btn btn--sm" onClick={loginWithMicrosoft}>
               {t("btn_login")}
             </button>
           )}
