@@ -21,6 +21,9 @@ export default function LeaderboardTab() {
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  const [showFullUnitsRanking, setShowFullUnitsRanking] = useState(false);
+  const [unitsLimit, setUnitsLimit] = useState(20);
+
   const ITEMS_PER_PAGE = 20;
 
   const fetchInitialRanking = async () => {
@@ -261,6 +264,132 @@ export default function LeaderboardTab() {
     );
   }
 
+  if (showFullUnitsRanking) {
+    const paginatedUnits = activeUnits.slice(0, unitsLimit);
+    const hasMoreUnits = activeUnits.length > unitsLimit;
+
+    return (
+      <div className="tab tab--active">
+        {/* Back button */}
+        <div style={{ marginBottom: "16px" }}>
+          <button 
+            className="btn btn--outline btn--sm" 
+            onClick={() => {
+              setShowFullUnitsRanking(false);
+              setUnitsLimit(20);
+            }}
+            style={{ display: "flex", alignItems: "center", gap: "6px" }}
+          >
+            {t("btn_back_to_summary")}
+          </button>
+        </div>
+
+        <div className="section-title">
+          {t("full_units_ranking_title")}
+        </div>
+        
+        <div 
+          className="alert alert--info" 
+          style={{ marginBottom: "12px" }}
+          dangerouslySetInnerHTML={{ __html: t("ranking_info") }}
+        />
+
+        <div className="leaderboard">
+          {paginatedUnits.map((bu, i) => {
+            const isOpen = expandedUnits.has(bu.id);
+            const barWidth = Math.round((bu.avg / maxAvg) * 100);
+
+            return (
+              <div 
+                className="leaderboard__unit-accordion" 
+                key={bu.id}
+                style={{ 
+                  borderLeft: `3px solid ${bu.color || "#888"}`, 
+                  borderRadius: "6px", 
+                  marginBottom: "4px", 
+                  overflow: "hidden" 
+                }}
+              >
+                <button 
+                  className="leaderboard__row leaderboard__unit-header" 
+                  style={{ width: "100%", background: "none", border: "none", cursor: "pointer", textAlign: "left", padding: 0 }}
+                  onClick={() => toggleUnit(bu.id)}
+                  aria-expanded={isOpen}
+                >
+                  <div className={`leaderboard__rank ${RC(i)}`}>{RI(i)}</div>
+                  <div className="leaderboard__info" style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: ".88rem", marginBottom: "3px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "2px" }}>
+                      {bu.label}
+                      <span 
+                        style={{ 
+                          fontSize: ".55rem", 
+                          fontWeight: 700, 
+                          letterSpacing: ".03em", 
+                          color: bu.text, 
+                          backgroundColor: bu.bg, 
+                          border: `1px solid ${bu.color}33`, 
+                          padding: "1px 6px", 
+                          borderRadius: "3px", 
+                          marginLeft: "6px", 
+                          verticalAlign: "middle", 
+                          whiteSpace: "nowrap" 
+                        }}
+                      >
+                        {bu.ecossistema}
+                      </span>
+                    </div>
+                    <div className="leaderboard__bar-bg" style={{ marginTop: "6px" }}>
+                      <div className="leaderboard__bar" style={{ width: `${barWidth}%`, backgroundColor: bu.color }}></div>
+                    </div>
+                  </div>
+                  <div className="leaderboard__points-col">
+                    <div className="leaderboard__points" style={{ fontSize: "1.3rem" }}>
+                      {Math.round(bu.avg)}
+                    </div>
+                    <div className="leaderboard__points-label">{t("lb_avg")}</div>
+                    <div className="leaderboard__total-points" style={{ fontSize: ".6rem", color: "var(--muted)", marginTop: "1px" }}>
+                      {bu.total} {t("lb_total_pts")}
+                    </div>
+                  </div>
+                  <div 
+                    className="leaderboard__accordion-arrow" 
+                    style={{ 
+                      fontSize: ".75rem", 
+                      color: "var(--muted)", 
+                      marginLeft: "8px", 
+                      transition: "transform .25s",
+                      transform: isOpen ? "rotate(180deg)" : "none" 
+                    }}
+                  >
+                    ▼
+                  </div>
+                </button>
+                
+                {isOpen && (
+                  <div className="leaderboard__members" style={{ padding: "0 4px 4px" }}>
+                    {renderMembers(bu.id)}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {hasMoreUnits && (
+          <div style={{ textAlign: "center", marginTop: "20px" }}>
+            <button 
+              className="btn btn--outline" 
+              onClick={() => setUnitsLimit(prev => prev + 20)}
+              style={{ width: "100%", maxWidth: "300px", padding: "10px 0" }}
+            >
+              {t("btn_load_more")}
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="tab tab--active">
       {/* Slim Hero section */}
@@ -393,84 +522,107 @@ export default function LeaderboardTab() {
             {t("lb_units_empty")}
           </div>
         ) : (
-          activeUnits.map((bu, i) => {
-            const isOpen = expandedUnits.has(bu.id);
-            const barWidth = Math.round((bu.avg / maxAvg) * 100);
+          <>
+            {activeUnits.slice(0, 5).map((bu, i) => {
+              const isOpen = expandedUnits.has(bu.id);
+              const barWidth = Math.round((bu.avg / maxAvg) * 100);
 
-            return (
-              <div 
-                className="leaderboard__unit-accordion" 
-                key={bu.id}
+              return (
+                <div 
+                  className="leaderboard__unit-accordion" 
+                  key={bu.id}
+                  style={{ 
+                    borderLeft: `3px solid ${bu.color || "#888"}`, 
+                    borderRadius: "6px", 
+                    marginBottom: "4px", 
+                    overflow: "hidden" 
+                  }}
+                >
+                  <button 
+                    className="leaderboard__row leaderboard__unit-header" 
+                    style={{ width: "100%", background: "none", border: "none", cursor: "pointer", textAlign: "left", padding: 0 }}
+                    onClick={() => toggleUnit(bu.id)}
+                    aria-expanded={isOpen}
+                  >
+                    <div className={`leaderboard__rank ${RC(i)}`}>{RI(i)}</div>
+                    <div className="leaderboard__info" style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: ".88rem", marginBottom: "3px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "2px" }}>
+                        {bu.label}
+                        <span 
+                          style={{ 
+                            fontSize: ".55rem", 
+                            fontWeight: 700, 
+                            letterSpacing: ".03em", 
+                            color: bu.text, 
+                            backgroundColor: bu.bg, 
+                            border: `1px solid ${bu.color}33`, 
+                            padding: "1px 6px", 
+                            borderRadius: "3px", 
+                            marginLeft: "6px", 
+                            verticalAlign: "middle", 
+                            whiteSpace: "nowrap" 
+                          }}
+                        >
+                          {bu.ecossistema}
+                        </span>
+                      </div>
+                      <div className="leaderboard__bar-bg" style={{ marginTop: "6px" }}>
+                        <div className="leaderboard__bar" style={{ width: `${barWidth}%`, backgroundColor: bu.color }}></div>
+                      </div>
+                    </div>
+                    <div className="leaderboard__points-col">
+                      <div className="leaderboard__points" style={{ fontSize: "1.3rem" }}>
+                        {Math.round(bu.avg)}
+                      </div>
+                      <div className="leaderboard__points-label">{t("lb_avg")}</div>
+                      <div className="leaderboard__total-points" style={{ fontSize: ".6rem", color: "var(--muted)", marginTop: "1px" }}>
+                        {bu.total} {t("lb_total_pts")}
+                      </div>
+                    </div>
+                    <div 
+                      className="leaderboard__accordion-arrow" 
+                      style={{ 
+                        fontSize: ".75rem", 
+                        color: "var(--muted)", 
+                        marginLeft: "8px", 
+                        transition: "transform .25s",
+                        transform: isOpen ? "rotate(180deg)" : "none" 
+                      }}
+                    >
+                      ▼
+                    </div>
+                  </button>
+                  
+                  {isOpen && (
+                    <div className="leaderboard__members" style={{ padding: "0 4px 4px" }}>
+                      {renderMembers(bu.id)}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {activeUnits.length > 5 && (
+              <button 
+                className="leaderboard__row" 
                 style={{ 
-                  borderLeft: `3px solid ${bu.color || "#888"}`, 
-                  borderRadius: "6px", 
-                  marginBottom: "4px", 
-                  overflow: "hidden" 
+                  width: "100%", 
+                  justifyContent: "center", 
+                  cursor: "pointer", 
+                  background: "rgba(255, 255, 255, 0.02)", 
+                  borderStyle: "dashed",
+                  fontWeight: 700,
+                  fontSize: "0.85rem",
+                  color: "var(--gold)"
+                }}
+                onClick={() => {
+                  setShowFullUnitsRanking(true);
                 }}
               >
-                <button 
-                  className="leaderboard__row leaderboard__unit-header" 
-                  style={{ width: "100%", background: "none", border: "none", cursor: "pointer", textAlign: "left", padding: 0 }}
-                  onClick={() => toggleUnit(bu.id)}
-                  aria-expanded={isOpen}
-                >
-                  <div className={`leaderboard__rank ${RC(i)}`}>{RI(i)}</div>
-                  <div className="leaderboard__info" style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: ".88rem", marginBottom: "3px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "2px" }}>
-                      {bu.label}
-                      <span 
-                        style={{ 
-                          fontSize: ".55rem", 
-                          fontWeight: 700, 
-                          letterSpacing: ".03em", 
-                          color: bu.text, 
-                          backgroundColor: bu.bg, 
-                          border: `1px solid ${bu.color}33`, 
-                          padding: "1px 6px", 
-                          borderRadius: "3px", 
-                          marginLeft: "6px", 
-                          verticalAlign: "middle", 
-                          whiteSpace: "nowrap" 
-                        }}
-                      >
-                        {bu.ecossistema}
-                      </span>
-                    </div>
-                    <div className="leaderboard__bar-bg" style={{ marginTop: "6px" }}>
-                      <div className="leaderboard__bar" style={{ width: `${barWidth}%`, backgroundColor: bu.color }}></div>
-                    </div>
-                  </div>
-                  <div className="leaderboard__points-col">
-                    <div className="leaderboard__points" style={{ fontSize: "1.3rem" }}>
-                      {Math.round(bu.avg)}
-                    </div>
-                    <div className="leaderboard__points-label">{t("lb_avg")}</div>
-                    <div className="leaderboard__total-points" style={{ fontSize: ".6rem", color: "var(--muted)", marginTop: "1px" }}>
-                      {bu.total} {t("lb_total_pts")}
-                    </div>
-                  </div>
-                  <div 
-                    className="leaderboard__accordion-arrow" 
-                    style={{ 
-                      fontSize: ".75rem", 
-                      color: "var(--muted)", 
-                      marginLeft: "8px", 
-                      transition: "transform .25s",
-                      transform: isOpen ? "rotate(180deg)" : "none" 
-                    }}
-                  >
-                    ▼
-                  </div>
-                </button>
-                
-                {isOpen && (
-                  <div className="leaderboard__members" style={{ padding: "0 4px 4px" }}>
-                    {renderMembers(bu.id)}
-                  </div>
-                )}
-              </div>
-            );
-          })
+                {t("btn_view_full_units_ranking")} ➔
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
