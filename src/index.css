@@ -53,8 +53,8 @@
   --bet-badge-pending-bg: #12141a;
   --leaderboard-me-bg: #1a1500;
   --leaderboard-bar-bg: rgba(255, 255, 255, .08);
-  --leaderboard-unit-bg: rgba(255, 255, 255, .03);
-  --leaderboard-member-bg: rgba(255, 255, 255, .025);
+  --leaderboard-unit-bg: rgba(255, 255, 255, .1);
+  --leaderboard-member-bg: rgba(255, 0, 0, .025);
   --leaderboard-member-border: rgba(255, 255, 255, .06);
   --gold-text: #000000;
   --hover-bg: rgba(255, 255, 255, 0.05);
@@ -117,7 +117,7 @@
   --bet-badge-pending-bg: #dbeafe;
   --leaderboard-me-bg: #fdfbf7;
   --leaderboard-bar-bg: #eae8e3;
-  --leaderboard-unit-bg: rgba(0, 0, 0, .02);
+  --leaderboard-unit-bg: rgba(252, 247, 233, 0.6);
   --leaderboard-member-bg: #fbfaf8;
   --leaderboard-member-border: #e4e2dd;
   --gold-text: #ffffff;
