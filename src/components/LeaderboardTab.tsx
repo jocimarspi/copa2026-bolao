@@ -114,8 +114,8 @@ export default function LeaderboardTab() {
       const isMe = authUser && m.uid === authUser.uid;
       const rankIdx = m.displayRank !== undefined ? m.displayRank - 1 : j;
       return (
-        <div 
-          className={`leaderboard__row leaderboard__row--member ${isMe ? "leaderboard__row--me" : ""}`} 
+        <div
+          className={`leaderboard__row leaderboard__row--member ${isMe ? "leaderboard__row--me" : ""}`}
           key={m.uid}
           onClick={() => setSelectedUser(m)}
         >
@@ -138,7 +138,7 @@ export default function LeaderboardTab() {
 
   const renderStatsModal = () => {
     if (!selectedUser) return null;
-    
+
     const rankIdx = selectedUser.displayRank !== undefined ? selectedUser.displayRank - 1 : -1;
     let cardClass = "";
     let avatarClass = "";
@@ -157,13 +157,13 @@ export default function LeaderboardTab() {
       <div className="stats-modal-backdrop" onClick={() => setSelectedUser(null)}>
         <div className={`stats-modal-card ${cardClass}`} onClick={(e) => e.stopPropagation()}>
           <button className="stats-modal-close" onClick={() => setSelectedUser(null)}>✕</button>
-          
+
           <div className="stats-modal-avatar-container">
             <div className={`stats-modal-avatar ${avatarClass}`}>
               {selectedUser.emoji || "⚽"}
             </div>
             <h3 className="stats-modal-name">{selectedUser.name}</h3>
-            
+
             <div className="stats-modal-badges">
               <span className="stats-modal-badge stats-modal-badge--rank">
                 {selectedUser.displayRank ? `${selectedUser.displayRank}º lugar` : "Sem classificação"}
@@ -172,7 +172,7 @@ export default function LeaderboardTab() {
                 {selectedUser.pts || 0} {t("pts_label")}
               </span>
               {selectedUser.unit && businessUnits[selectedUser.unit] && (
-                <span 
+                <span
                   className="stats-modal-badge"
                   style={{
                     backgroundColor: businessUnits[selectedUser.unit].bg,
@@ -185,13 +185,13 @@ export default function LeaderboardTab() {
               )}
             </div>
           </div>
-          
+
           <div className="stats-modal-divider" />
-          
+
           <div className="stats-modal-subtitle">
             {t("stats_details_title")}
           </div>
-          
+
           <div className="stats-modal-grid">
             <div className="stats-modal-item stats-modal-item--exact">
               <div className="stats-modal-label-group">
@@ -200,7 +200,7 @@ export default function LeaderboardTab() {
               </div>
               <span className="stats-modal-value">{selectedUser.exactCount || 0}</span>
             </div>
-            
+
             <div className="stats-modal-item stats-modal-item--correct">
               <div className="stats-modal-label-group">
                 <span className="stats-modal-icon">🟢</span>
@@ -208,7 +208,7 @@ export default function LeaderboardTab() {
               </div>
               <span className="stats-modal-value">{selectedUser.outcomeCount || 0}</span>
             </div>
-            
+
             <div className="stats-modal-item stats-modal-item--error">
               <div className="stats-modal-label-group">
                 <span className="stats-modal-icon">🔴</span>
@@ -217,9 +217,9 @@ export default function LeaderboardTab() {
               <span className="stats-modal-value">{selectedUser.wrongCount || 0}</span>
             </div>
           </div>
-          
-          <button 
-            className="btn btn--sm btn--outline" 
+
+          <button
+            className="btn btn--sm btn--outline"
             onClick={() => setSelectedUser(null)}
             style={{ width: "100%", marginTop: "20px", padding: "10px 0" }}
           >
@@ -238,8 +238,8 @@ export default function LeaderboardTab() {
       <div className="tab tab--active">
         {/* Back button */}
         <div style={{ marginBottom: "16px" }}>
-          <button 
-            className="btn btn--outline btn--sm" 
+          <button
+            className="btn btn--outline btn--sm"
             onClick={() => setShowFullRanking(false)}
             style={{ display: "flex", alignItems: "center", gap: "6px" }}
           >
@@ -256,8 +256,8 @@ export default function LeaderboardTab() {
             const bu = businessUnits[u.unit];
             const rankIdx = u.displayRank !== undefined ? u.displayRank - 1 : i;
             return (
-              <div 
-                className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`} 
+              <div
+                className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`}
                 key={u.uid}
                 onClick={() => setSelectedUser(u)}
               >
@@ -269,8 +269,8 @@ export default function LeaderboardTab() {
                     {isMe && <span style={{ color: "var(--gold)", fontSize: ".68rem" }}> ({t("user_you").toLowerCase()})</span>}
                   </div>
                   {bu && (
-                    <div 
-                      className="leaderboard__unit-tag" 
+                    <div
+                      className="leaderboard__unit-tag"
                       style={{ backgroundColor: bu.bg, color: bu.text }}
                     >
                       {bu.label}
@@ -288,8 +288,8 @@ export default function LeaderboardTab() {
 
         {hasMoreRanking && (
           <div style={{ textAlign: "center", marginTop: "20px" }}>
-            <button 
-              className="btn btn--outline" 
+            <button
+              className="btn btn--outline"
               onClick={() => setVisibleRankingLimit(prev => prev + 20)}
               style={{ width: "100%", maxWidth: "300px", padding: "10px 0" }}
             >
@@ -310,8 +310,8 @@ export default function LeaderboardTab() {
       <div className="tab tab--active">
         {/* Back button */}
         <div style={{ marginBottom: "16px" }}>
-          <button 
-            className="btn btn--outline btn--sm" 
+          <button
+            className="btn btn--outline btn--sm"
             onClick={() => {
               setShowFullUnitsRanking(false);
               setUnitsLimit(20);
@@ -325,9 +325,9 @@ export default function LeaderboardTab() {
         <div className="section-title">
           {t("full_units_ranking_title")}
         </div>
-        
-        <div 
-          className="alert alert--info" 
+
+        <div
+          className="alert alert--info"
           style={{ marginBottom: "12px" }}
           dangerouslySetInnerHTML={{ __html: t("ranking_info") }}
         />
@@ -338,18 +338,18 @@ export default function LeaderboardTab() {
             const barWidth = Math.round((bu.avg / maxAvg) * 100);
 
             return (
-              <div 
-                className="leaderboard__unit-accordion" 
+              <div
+                className="leaderboard__unit-accordion"
                 key={bu.id}
-                style={{ 
-                  borderLeft: `3px solid ${bu.color || "#888"}`, 
-                  borderRadius: "6px", 
-                  marginBottom: "4px", 
-                  overflow: "hidden" 
+                style={{
+                  borderLeft: `3px solid ${bu.color || "#888"}`,
+                  borderRadius: "6px",
+                  marginBottom: "4px",
+                  overflow: "hidden"
                 }}
               >
-                <button 
-                  className="leaderboard__row leaderboard__unit-header" 
+                <button
+                  className="leaderboard__row leaderboard__unit-header"
                   style={{ width: "100%", background: "none", border: "none", cursor: "pointer", textAlign: "left", padding: 0 }}
                   onClick={() => toggleUnit(bu.id)}
                   aria-expanded={isOpen}
@@ -358,19 +358,19 @@ export default function LeaderboardTab() {
                   <div className="leaderboard__info" style={{ flex: 1 }}>
                     <div style={{ fontWeight: 700, fontSize: ".88rem", marginBottom: "3px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "2px" }}>
                       {bu.label}
-                      <span 
-                        style={{ 
-                          fontSize: ".55rem", 
-                          fontWeight: 700, 
-                          letterSpacing: ".03em", 
-                          color: bu.text, 
-                          backgroundColor: bu.bg, 
-                          border: `1px solid ${bu.color}33`, 
-                          padding: "1px 6px", 
-                          borderRadius: "3px", 
-                          marginLeft: "6px", 
-                          verticalAlign: "middle", 
-                          whiteSpace: "nowrap" 
+                      <span
+                        style={{
+                          fontSize: ".55rem",
+                          fontWeight: 700,
+                          letterSpacing: ".03em",
+                          color: bu.text,
+                          backgroundColor: bu.bg,
+                          border: `1px solid ${bu.color}33`,
+                          padding: "1px 6px",
+                          borderRadius: "3px",
+                          marginLeft: "6px",
+                          verticalAlign: "middle",
+                          whiteSpace: "nowrap"
                         }}
                       >
                         {bu.ecossistema}
@@ -389,20 +389,20 @@ export default function LeaderboardTab() {
                       {bu.total} {t("lb_total_pts")}
                     </div>
                   </div>
-                  <div 
-                    className="leaderboard__accordion-arrow" 
-                    style={{ 
-                      fontSize: ".75rem", 
-                      color: "var(--muted)", 
-                      marginLeft: "8px", 
+                  <div
+                    className="leaderboard__accordion-arrow"
+                    style={{
+                      fontSize: ".75rem",
+                      color: "var(--muted)",
+                      marginLeft: "8px",
                       transition: "transform .25s",
-                      transform: isOpen ? "rotate(180deg)" : "none" 
+                      transform: isOpen ? "rotate(180deg)" : "none"
                     }}
                   >
                     ▼
                   </div>
                 </button>
-                
+
                 {isOpen && (
                   <div className="leaderboard__members" style={{ padding: "0 4px 4px" }}>
                     {renderMembers(bu.id)}
@@ -415,8 +415,8 @@ export default function LeaderboardTab() {
 
         {hasMoreUnits && (
           <div style={{ textAlign: "center", marginTop: "20px" }}>
-            <button 
-              className="btn btn--outline" 
+            <button
+              className="btn btn--outline"
               onClick={() => setUnitsLimit(prev => prev + 20)}
               style={{ width: "100%", maxWidth: "300px", padding: "10px 0" }}
             >
@@ -452,7 +452,7 @@ export default function LeaderboardTab() {
       </div>
 
       <div className="section-title">{t("general_classification")}</div>
-      
+
       {/* 1. General Ranking List */}
       {dataLoading ? (
         <div className="leaderboard">
@@ -495,7 +495,7 @@ export default function LeaderboardTab() {
                 const isMe = authUser && u.uid === authUser.uid;
                 const medalClass = u.displayRank === 1 ? "podium__medal--gold" : u.displayRank === 2 ? "podium__medal--silver" : "podium__medal--bronze";
                 return (
-                  <div 
+                  <div
                     className={`podium__item podium__item--second ${isMe ? "podium__item--me" : ""}`}
                     onClick={() => setSelectedUser(u)}
                   >
@@ -521,7 +521,7 @@ export default function LeaderboardTab() {
                 const isMe = authUser && u.uid === authUser.uid;
                 const medalClass = u.displayRank === 1 ? "podium__medal--gold" : u.displayRank === 2 ? "podium__medal--silver" : "podium__medal--bronze";
                 return (
-                  <div 
+                  <div
                     className={`podium__item podium__item--first ${isMe ? "podium__item--me" : ""}`}
                     onClick={() => setSelectedUser(u)}
                   >
@@ -547,7 +547,7 @@ export default function LeaderboardTab() {
                 const isMe = authUser && u.uid === authUser.uid;
                 const medalClass = u.displayRank === 1 ? "podium__medal--gold" : u.displayRank === 2 ? "podium__medal--silver" : "podium__medal--bronze";
                 return (
-                  <div 
+                  <div
                     className={`podium__item podium__item--third ${isMe ? "podium__item--me" : ""}`}
                     onClick={() => setSelectedUser(u)}
                   >
@@ -576,8 +576,8 @@ export default function LeaderboardTab() {
               const bu = businessUnits[u.unit];
               const rankIdx = u.displayRank !== undefined ? u.displayRank - 1 : (sortedUsers.length >= 3 ? i + 3 : i);
               return (
-                <div 
-                  className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`} 
+                <div
+                  className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`}
                   key={u.uid}
                   onClick={() => setSelectedUser(u)}
                 >
@@ -589,8 +589,8 @@ export default function LeaderboardTab() {
                       {isMe && <span style={{ color: "var(--gold)", fontSize: ".68rem" }}> ({t("user_you").toLowerCase()})</span>}
                     </div>
                     {bu && (
-                      <div 
-                        className="leaderboard__unit-tag" 
+                      <div
+                        className="leaderboard__unit-tag"
                         style={{ backgroundColor: bu.bg, color: bu.text }}
                       >
                         {bu.label}
@@ -606,13 +606,13 @@ export default function LeaderboardTab() {
             })}
 
             {users.length > 10 && (
-              <button 
-                className="leaderboard__row" 
-                style={{ 
-                  width: "100%", 
-                  justifyContent: "center", 
-                  cursor: "pointer", 
-                  background: "rgba(255, 255, 255, 0.02)", 
+              <button
+                className="leaderboard__row"
+                style={{
+                  width: "100%",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  background: "rgba(255, 255, 255, 0.02)",
                   borderStyle: "dashed",
                   fontWeight: 700,
                   fontSize: "0.85rem",
@@ -634,8 +634,8 @@ export default function LeaderboardTab() {
       <div className="section-title" style={{ marginTop: "28px" }}>
         {t("ranking_units")}
       </div>
-      <div 
-        className="alert alert--info" 
+      <div
+        className="alert alert--info"
         style={{ marginBottom: "12px" }}
         dangerouslySetInnerHTML={{ __html: t("ranking_info") }}
       />
@@ -656,19 +656,19 @@ export default function LeaderboardTab() {
               const barWidth = Math.round((bu.avg / maxAvg) * 100);
 
               return (
-                <div 
-                  className="leaderboard__unit-accordion" 
+                <div
+                  className="leaderboard__unit-accordion"
                   key={bu.id}
-                  style={{ 
-                    borderLeft: `3px solid ${bu.color || "#888"}`, 
-                    borderRadius: "6px", 
-                    marginBottom: "4px", 
-                    overflow: "hidden" 
+                  style={{
+                    borderLeft: `3px solid ${bu.color || "#888"}`,
+                    borderRadius: "6px",
+                    marginBottom: "4px",
+                    overflow: "hidden"
                   }}
                 >
-                  <button 
-                    className="leaderboard__row leaderboard__unit-header" 
-                    style={{ width: "100%", background: "none", border: "none", cursor: "pointer", textAlign: "left", padding: 0 }}
+                  <button
+                    className="leaderboard__row leaderboard__unit-header"
+                    style={{ width: "100%", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
                     onClick={() => toggleUnit(bu.id)}
                     aria-expanded={isOpen}
                   >
@@ -676,19 +676,19 @@ export default function LeaderboardTab() {
                     <div className="leaderboard__info" style={{ flex: 1 }}>
                       <div style={{ fontWeight: 700, fontSize: ".88rem", marginBottom: "3px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "2px" }}>
                         {bu.label}
-                        <span 
-                          style={{ 
-                            fontSize: ".55rem", 
-                            fontWeight: 700, 
-                            letterSpacing: ".03em", 
-                            color: bu.text, 
-                            backgroundColor: bu.bg, 
-                            border: `1px solid ${bu.color}33`, 
-                            padding: "1px 6px", 
-                            borderRadius: "3px", 
-                            marginLeft: "6px", 
-                            verticalAlign: "middle", 
-                            whiteSpace: "nowrap" 
+                        <span
+                          style={{
+                            fontSize: ".55rem",
+                            fontWeight: 700,
+                            letterSpacing: ".03em",
+                            color: bu.text,
+                            backgroundColor: bu.bg,
+                            border: `1px solid ${bu.color}33`,
+                            padding: "1px 6px",
+                            borderRadius: "3px",
+                            marginLeft: "6px",
+                            verticalAlign: "middle",
+                            whiteSpace: "nowrap"
                           }}
                         >
                           {bu.ecossistema}
@@ -707,20 +707,20 @@ export default function LeaderboardTab() {
                         {bu.total} {t("lb_total_pts")}
                       </div>
                     </div>
-                    <div 
-                      className="leaderboard__accordion-arrow" 
-                      style={{ 
-                        fontSize: ".75rem", 
-                        color: "var(--muted)", 
-                        marginLeft: "8px", 
+                    <div
+                      className="leaderboard__accordion-arrow"
+                      style={{
+                        fontSize: ".75rem",
+                        color: "var(--muted)",
+                        marginLeft: "8px",
                         transition: "transform .25s",
-                        transform: isOpen ? "rotate(180deg)" : "none" 
+                        transform: isOpen ? "rotate(180deg)" : "none"
                       }}
                     >
                       ▼
                     </div>
                   </button>
-                  
+
                   {isOpen && (
                     <div className="leaderboard__members" style={{ padding: "0 4px 4px" }}>
                       {renderMembers(bu.id)}
@@ -731,13 +731,13 @@ export default function LeaderboardTab() {
             })}
 
             {activeUnits.length > 5 && (
-              <button 
-                className="leaderboard__row" 
-                style={{ 
-                  width: "100%", 
-                  justifyContent: "center", 
-                  cursor: "pointer", 
-                  background: "rgba(255, 255, 255, 0.02)", 
+              <button
+                className="leaderboard__row"
+                style={{
+                  width: "100%",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  background: "rgba(255, 255, 255, 0.02)",
                   borderStyle: "dashed",
                   fontWeight: 700,
                   fontSize: "0.85rem",
