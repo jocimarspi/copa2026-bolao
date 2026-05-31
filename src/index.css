@@ -73,6 +73,27 @@
   --bottom-nav-bg: rgba(17, 17, 17, 0.95);
   --nav-dropdown-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.6);
   --calendar-indicator-filter: invert(1);
+
+  /* Alerts */
+  --alert-info-bg: #0d1117;
+  --alert-info-text: #93c5fd;
+  --alert-info-border: #1e3a5f;
+  --alert-success-bg: #0d2818;
+  --alert-success-text: #4ade80;
+  --alert-success-border: #2d6a4f;
+  --alert-error-bg: #1c0808;
+  --alert-error-text: #fca5a5;
+  --alert-error-border: #7f1d1d;
+  --alert-warning-bg: #1a1200;
+  --alert-warning-text: var(--gold);
+  --alert-warning-border: #4a3500;
+
+  --match-card-bg: rgba(17, 17, 17, 0.82);
+  --match-card-hover-border: rgba(255, 255, 255, 0.15);
+
+  --status-badge-win-bg: #0d2818;
+  --status-badge-win-text: #4ade80;
+  --status-badge-win-border: #4ade80;
 }
 
 [data-theme="light"] {
@@ -137,6 +158,27 @@
   --bottom-nav-bg: rgba(251, 250, 248, 0.95);
   --nav-dropdown-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.08);
   --calendar-indicator-filter: invert(0);
+
+  /* Alerts */
+  --alert-info-bg: #dbeafe;
+  --alert-info-text: #1e40af;
+  --alert-info-border: #bfdbfe;
+  --alert-success-bg: #dcfce7;
+  --alert-success-text: #166534;
+  --alert-success-border: #bbf7d0;
+  --alert-error-bg: #fee2e2;
+  --alert-error-text: #991b1b;
+  --alert-error-border: #fecaca;
+  --alert-warning-bg: #fef3c7;
+  --alert-warning-text: #92400e;
+  --alert-warning-border: #fde68a;
+
+  --match-card-bg: rgba(255, 255, 255, 0.82);
+  --match-card-hover-border: rgba(0, 0, 0, 0.12);
+
+  --status-badge-win-bg: #dcfce7;
+  --status-badge-win-text: #166534;
+  --status-badge-win-border: #166534;
 }
 
 /* ── Base ── */
@@ -1189,9 +1231,9 @@ main {
 }
 
 .status-badge--win {
-  background: #0d2818;
-  color: #4ade80;
-  border: 1px solid #4ade80;
+  background: var(--status-badge-win-bg);
+  color: var(--status-badge-win-text);
+  border: 1px solid var(--status-badge-win-border);
 }
 
 /* ══════════════ TOURNAMENT / GROUPS ══════════════ */
@@ -1430,27 +1472,28 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 }
 
 .alert--info {
-  background: #0d1117;
-  color: #93c5fd;
-  border: 1px solid #1e3a5f;
+  background: var(--alert-info-bg);
+  color: var(--alert-info-text);
+  border: 1px solid var(--alert-info-border);
 }
 
 .alert--success {
-  background: #0d2818;
-  color: #4ade80;
-  border: 1px solid #2d6a4f;
+  background: var(--alert-success-bg);
+  color: var(--alert-success-text);
+  border: 1px solid var(--alert-success-border);
 }
 
-.alert--error {
-  background: #1c0808;
-  color: #fca5a5;
-  border: 1px solid #7f1d1d;
+.alert--error,
+.alert--danger {
+  background: var(--alert-error-bg);
+  color: var(--alert-error-text);
+  border: 1px solid var(--alert-error-border);
 }
 
 .alert--warning {
-  background: #1a1200;
-  color: var(--gold);
-  border: 1px solid #4a3500;
+  background: var(--alert-warning-bg);
+  color: var(--alert-warning-text);
+  border: 1px solid var(--alert-warning-border);
 }
 
 .divider {
@@ -1883,7 +1926,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
 /* Unified Card */
 .match-card--unified {
-  background: var(--card);
+  background: var(--match-card-bg);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
@@ -1892,10 +1935,12 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   gap: 12px;
   transition: transform 0.2s, border-color 0.2s;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .match-card--unified:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--match-card-hover-border);
   transform: translateY(-2px);
 }
 
