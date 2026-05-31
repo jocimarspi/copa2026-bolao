@@ -78,6 +78,10 @@ export const translations = {
 
     "btn_confirm": "Confirmar",
     "btn_cancel": "Cancelar",
+    "stats_exact_scores": "Quantidade de Placares Exatos",
+    "stats_correct_results": "Quantidade de Acertos de Resultado",
+    "stats_errors": "Quantidade de Erros",
+    "stats_details_title": "Detalhamento de Palpites",
     "app_title": "WE ARE DB1 GROUP — Bolão Copa 2026",
     "logo_sub": "Bolão Copa 2026 · USA · CAN · MEX",
     "user_you": "Você",
@@ -357,6 +361,10 @@ export const translations = {
 
     "btn_confirm": "Confirmar",
     "btn_cancel": "Cancelar",
+    "stats_exact_scores": "Cantidad de Marcadores Exactos",
+    "stats_correct_results": "Cantidad de Aciertos de Resultado",
+    "stats_errors": "Cantidad de Errores",
+    "stats_details_title": "Detalle de Pronósticos",
     "app_title": "WE ARE DB1 GROUP — Porra Copa 2026",
     "logo_sub": "Porra Copa 2026 · USA · CAN · MEX",
     "user_you": "Tú",
@@ -636,6 +644,10 @@ export const translations = {
 
     "btn_confirm": "Confirm",
     "btn_cancel": "Cancel",
+    "stats_exact_scores": "Quantity of Exact Scores",
+    "stats_correct_results": "Quantity of Outcome Hits",
+    "stats_errors": "Quantity of Errors",
+    "stats_details_title": "Prediction Details",
     "app_title": "WE ARE DB1 GROUP — World Cup Pool 2026",
     "logo_sub": "World Cup Pool 2026 · USA · CAN · MEX",
     "user_you": "You",

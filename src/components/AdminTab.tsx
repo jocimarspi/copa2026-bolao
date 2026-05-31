@@ -159,8 +159,9 @@ export default function AdminTab() {
         
         // Pass matches as 3rd parameter to prevent crash
         const stats = getUserPredictionStats(userPredictions, latestResults, matches);
+        const newPoints = stats.pts;
         await setDoc(doc(db, "users", userId), { 
-          pts: stats.pts,
+          pts: newPoints,
           exactCount: stats.exactCount,
           outcomeCount: stats.outcomeCount,
           wrongCount: stats.wrongCount

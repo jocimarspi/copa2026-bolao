@@ -21,6 +21,8 @@ export default function LeaderboardTab() {
   const [showFullUnitsRanking, setShowFullUnitsRanking] = useState(false);
   const [unitsLimit, setUnitsLimit] = useState(20);
 
+  const [selectedUser, setSelectedUser] = useState<UserRankInfo | null>(null);
+
   // 1. General Classification (Top 10 users)
   const allRankedUsers = getUsersWithRanks(sortUsers(users));
   const sortedUsers = allRankedUsers.slice(0, 10);
@@ -112,7 +114,11 @@ export default function LeaderboardTab() {
       const isMe = authUser && m.uid === authUser.uid;
       const rankIdx = m.displayRank !== undefined ? m.displayRank - 1 : j;
       return (
-        <div className={`leaderboard__row leaderboard__row--member ${isMe ? "leaderboard__row--me" : ""}`} key={m.uid}>
+        <div 
+          className={`leaderboard__row leaderboard__row--member ${isMe ? "leaderboard__row--me" : ""}`} 
+          key={m.uid}
+          onClick={() => setSelectedUser(m)}
+        >
           <div className={`leaderboard__rank ${RC(rankIdx)}`}>{RI(rankIdx)}</div>
           <div className="leaderboard__avatar" style={{ fontSize: "1rem" }}>{m.emoji || "⚽"}</div>
           <div className="leaderboard__info">
@@ -128,6 +134,100 @@ export default function LeaderboardTab() {
         </div>
       );
     });
+  };
+
+  const renderStatsModal = () => {
+    if (!selectedUser) return null;
+    
+    const rankIdx = selectedUser.displayRank !== undefined ? selectedUser.displayRank - 1 : -1;
+    let cardClass = "";
+    let avatarClass = "";
+    if (rankIdx === 0) {
+      cardClass = "stats-modal-card--gold";
+      avatarClass = "stats-modal-avatar--gold";
+    } else if (rankIdx === 1) {
+      cardClass = "stats-modal-card--silver";
+      avatarClass = "stats-modal-avatar--silver";
+    } else if (rankIdx === 2) {
+      cardClass = "stats-modal-card--bronze";
+      avatarClass = "stats-modal-avatar--bronze";
+    }
+
+    return (
+      <div className="stats-modal-backdrop" onClick={() => setSelectedUser(null)}>
+        <div className={`stats-modal-card ${cardClass}`} onClick={(e) => e.stopPropagation()}>
+          <button className="stats-modal-close" onClick={() => setSelectedUser(null)}>✕</button>
+          
+          <div className="stats-modal-avatar-container">
+            <div className={`stats-modal-avatar ${avatarClass}`}>
+              {selectedUser.emoji || "⚽"}
+            </div>
+            <h3 className="stats-modal-name">{selectedUser.name}</h3>
+            
+            <div className="stats-modal-badges">
+              <span className="stats-modal-badge stats-modal-badge--rank">
+                {selectedUser.displayRank ? `${selectedUser.displayRank}º lugar` : "Sem classificação"}
+              </span>
+              <span className="stats-modal-badge stats-modal-badge--points">
+                {selectedUser.pts || 0} {t("pts_label")}
+              </span>
+              {selectedUser.unit && businessUnits[selectedUser.unit] && (
+                <span 
+                  className="stats-modal-badge"
+                  style={{
+                    backgroundColor: businessUnits[selectedUser.unit].bg,
+                    color: businessUnits[selectedUser.unit].text,
+                    border: `1px solid ${businessUnits[selectedUser.unit].color}33`
+                  }}
+                >
+                  {businessUnits[selectedUser.unit].label}
+                </span>
+              )}
+            </div>
+          </div>
+          
+          <div className="stats-modal-divider" />
+          
+          <div className="stats-modal-subtitle">
+            {t("stats_details_title")}
+          </div>
+          
+          <div className="stats-modal-grid">
+            <div className="stats-modal-item stats-modal-item--exact">
+              <div className="stats-modal-label-group">
+                <span className="stats-modal-icon">🎯</span>
+                <span className="stats-modal-label">{t("stats_exact_scores")}</span>
+              </div>
+              <span className="stats-modal-value">{selectedUser.exactCount || 0}</span>
+            </div>
+            
+            <div className="stats-modal-item stats-modal-item--correct">
+              <div className="stats-modal-label-group">
+                <span className="stats-modal-icon">🟢</span>
+                <span className="stats-modal-label">{t("stats_correct_results")}</span>
+              </div>
+              <span className="stats-modal-value">{selectedUser.outcomeCount || 0}</span>
+            </div>
+            
+            <div className="stats-modal-item stats-modal-item--error">
+              <div className="stats-modal-label-group">
+                <span className="stats-modal-icon">🔴</span>
+                <span className="stats-modal-label">{t("stats_errors")}</span>
+              </div>
+              <span className="stats-modal-value">{selectedUser.wrongCount || 0}</span>
+            </div>
+          </div>
+          
+          <button 
+            className="btn btn--sm btn--outline" 
+            onClick={() => setSelectedUser(null)}
+            style={{ width: "100%", marginTop: "20px", padding: "10px 0" }}
+          >
+            {t("btn_cancel")}
+          </button>
+        </div>
+      </div>
+    );
   };
 
   if (showFullRanking) {
@@ -156,7 +256,11 @@ export default function LeaderboardTab() {
             const bu = businessUnits[u.unit];
             const rankIdx = u.displayRank !== undefined ? u.displayRank - 1 : i;
             return (
-              <div className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`} key={u.uid}>
+              <div 
+                className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`} 
+                key={u.uid}
+                onClick={() => setSelectedUser(u)}
+              >
                 <div className={`leaderboard__rank ${RC(rankIdx)}`}>{RI(rankIdx)}</div>
                 <div className="leaderboard__avatar">{u.emoji || "⚽"}</div>
                 <div className="leaderboard__info">
@@ -193,6 +297,7 @@ export default function LeaderboardTab() {
             </button>
           </div>
         )}
+        {renderStatsModal()}
       </div>
     );
   }
@@ -319,6 +424,7 @@ export default function LeaderboardTab() {
             </button>
           </div>
         )}
+        {renderStatsModal()}
       </div>
     );
   }
@@ -389,7 +495,10 @@ export default function LeaderboardTab() {
                 const isMe = authUser && u.uid === authUser.uid;
                 const medalClass = u.displayRank === 1 ? "podium__medal--gold" : u.displayRank === 2 ? "podium__medal--silver" : "podium__medal--bronze";
                 return (
-                  <div className={`podium__item podium__item--second ${isMe ? "podium__item--me" : ""}`}>
+                  <div 
+                    className={`podium__item podium__item--second ${isMe ? "podium__item--me" : ""}`}
+                    onClick={() => setSelectedUser(u)}
+                  >
                     <div className="podium__avatar-wrapper">
                       <div className="podium__avatar">{u.emoji || "⚽"}</div>
                       <div className="podium__ribbon"></div>
@@ -412,7 +521,10 @@ export default function LeaderboardTab() {
                 const isMe = authUser && u.uid === authUser.uid;
                 const medalClass = u.displayRank === 1 ? "podium__medal--gold" : u.displayRank === 2 ? "podium__medal--silver" : "podium__medal--bronze";
                 return (
-                  <div className={`podium__item podium__item--first ${isMe ? "podium__item--me" : ""}`}>
+                  <div 
+                    className={`podium__item podium__item--first ${isMe ? "podium__item--me" : ""}`}
+                    onClick={() => setSelectedUser(u)}
+                  >
                     <div className="podium__avatar-wrapper">
                       <div className="podium__avatar">{u.emoji || "⚽"}</div>
                       <div className="podium__ribbon"></div>
@@ -435,7 +547,10 @@ export default function LeaderboardTab() {
                 const isMe = authUser && u.uid === authUser.uid;
                 const medalClass = u.displayRank === 1 ? "podium__medal--gold" : u.displayRank === 2 ? "podium__medal--silver" : "podium__medal--bronze";
                 return (
-                  <div className={`podium__item podium__item--third ${isMe ? "podium__item--me" : ""}`}>
+                  <div 
+                    className={`podium__item podium__item--third ${isMe ? "podium__item--me" : ""}`}
+                    onClick={() => setSelectedUser(u)}
+                  >
                     <div className="podium__avatar-wrapper">
                       <div className="podium__avatar">{u.emoji || "⚽"}</div>
                       <div className="podium__ribbon"></div>
@@ -461,7 +576,11 @@ export default function LeaderboardTab() {
               const bu = businessUnits[u.unit];
               const rankIdx = u.displayRank !== undefined ? u.displayRank - 1 : (sortedUsers.length >= 3 ? i + 3 : i);
               return (
-                <div className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`} key={u.uid}>
+                <div 
+                  className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`} 
+                  key={u.uid}
+                  onClick={() => setSelectedUser(u)}
+                >
                   <div className={`leaderboard__rank ${RC(rankIdx)}`}>{RI(rankIdx)}</div>
                   <div className="leaderboard__avatar">{u.emoji || "⚽"}</div>
                   <div className="leaderboard__info">
@@ -634,6 +753,7 @@ export default function LeaderboardTab() {
           </>
         )}
       </div>
+      {renderStatsModal()}
     </div>
   );
 }
