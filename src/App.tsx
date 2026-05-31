@@ -159,14 +159,18 @@ function MainAppLayout() {
   );
 }
 
+import { ThemeProvider } from "./contexts/ThemeContext";
+
 export default function App() {
   return (
-    <ModalProvider>
-      <AuthProvider>
-        <DataProvider>
-          <MainAppLayout />
-        </DataProvider>
-      </AuthProvider>
-    </ModalProvider>
+    <ThemeProvider>
+      <ModalProvider>
+        <AuthProvider>
+          <DataProvider>
+            <MainAppLayout />
+          </DataProvider>
+        </AuthProvider>
+      </ModalProvider>
+    </ThemeProvider>
   );
 }

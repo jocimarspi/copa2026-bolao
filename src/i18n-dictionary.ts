@@ -281,6 +281,9 @@ export const translations = {
     "democratic_republic_of_the_congo": "R.D. Congo", "congo_dr": "R.D. Congo",
     "cote_d_ivoire": "Costa do Marfim", "cote_divoire": "Costa do Marfim", "cote_d'ivoire": "Costa do Marfim",
     "turkiye": "Turquia", "ir_iran": "Irã",
+    "theme_light": "Claro",
+    "theme_dark": "Escuro",
+    "theme_toggle": "Alternar Tema",
   },
   "es": {
     "nav_ranking": "🏆 Ranking",
@@ -564,6 +567,9 @@ export const translations = {
     "democratic_republic_of_the_congo": "R.D. Congo", "congo_dr": "R.D. Congo",
     "cote_d_ivoire": "Costa de Marfil", "cote_divoire": "Costa de Marfil", "cote_d'ivoire": "Costa de Marfil",
     "turkiye": "Turquía", "ir_iran": "Irán",
+    "theme_light": "Claro",
+    "theme_dark": "Oscuro",
+    "theme_toggle": "Alternar Tema",
   },
   "en": {
     "nav_ranking": "🏆 Ranking",
@@ -847,5 +853,8 @@ export const translations = {
     "democratic_republic_of_the_congo": "DR Congo", "congo_dr": "DR Congo",
     "cote_d_ivoire": "Ivory Coast", "cote_divoire": "Ivory Coast", "cote_d'ivoire": "Ivory Coast",
     "turkiye": "Turkey", "ir_iran": "Iran",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "theme_toggle": "Toggle Theme",
   }
 };

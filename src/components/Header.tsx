@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import { sortUsers, getUsersWithRanks } from "../helpers";
+import { useTheme } from "../contexts/ThemeContext";
 
 interface HeaderProps {
   currentTab: string;
@@ -48,6 +49,7 @@ export default function Header({ currentTab, setCurrentTab }: HeaderProps) {
   const { t, i18n } = useTranslation();
   const { user, isAdmin, userProfile, loginWithMicrosoft } = useAuth();
   const { users } = useData();
+  const { theme, toggleTheme } = useTheme();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const sortedAllUsers = sortUsers(users);
@@ -158,11 +160,22 @@ export default function Header({ currentTab, setCurrentTab }: HeaderProps) {
           </div>
         )}
 
-        <select id="lang-switcher" value={i18n.language} onChange={handleLanguageChange}>
-          <option value="pt-BR">🇧🇷</option>
-          <option value="es">🇪🇸</option>
-          <option value="en">🇺🇸</option>
-        </select>
+        <div className="header__actions">
+          <button 
+            id="theme-switcher" 
+            onClick={toggleTheme} 
+            title={t("theme_toggle")}
+            aria-label={t("theme_toggle")}
+          >
+            {theme === "light" ? "🌙" : "☀️"}
+          </button>
+
+          <select id="lang-switcher" value={i18n.language} onChange={handleLanguageChange}>
+            <option value="pt-BR">🇧🇷</option>
+            <option value="es">🇪🇸</option>
+            <option value="en">🇺🇸</option>
+          </select>
+        </div>
       </div>
     </header>
   );
