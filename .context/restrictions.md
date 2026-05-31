@@ -13,12 +13,20 @@ Este documento elenca as restrições rígidas de arquitetura, segurança e regr
       && request.time < getKickoffTimestamp(matchId) - duration.value(30, 'm');
     ```
 
-## 2. Regras de Pontuação
+## 2. Regras de Pontuação e Classificação
 O cálculo de pontos é fixado sob os seguintes critérios:
 - **5 pontos**: Acerto exato do placar (ex: palpite 2x1, resultado oficial 2x1).
 - **3 pontos**: Acerto do desfecho do jogo (vitória de A, vitória de B ou empate), mas com gols errados (ex: palpite 3x1, resultado oficial 1x0).
 - **0 pontos**: Erro completo do resultado.
 - **Partidas de Teste**: Partidas com o atributo `test: true` na coleção `matches` não devem somar pontos no ranking oficial.
+
+### Critérios de Desempate da Classificação
+Caso dois ou mais participantes possuam a mesma pontuação, o desempate é feito de forma determinística seguindo esta hierarquia:
+1. **Pontos Totais** (mais pontos vence)
+2. **Quantidade de Placares Exatos** (mais acertos de placar exato de 5 pontos vence)
+3. **Quantidade de Acertos de Resultado** (mais acertos de resultado de 3 pontos vence)
+4. **Quantidade de Erros** (menos erros / palpites com 0 pontos vence)
+5. **Divisão de Posição**: Se o empate persistir em todos os critérios anteriores, os participantes compartilham a mesma posição (ex: dois em 1º lugar, e o próximo em 3º lugar).
 
 ## 3. Segurança e Acesso Administrativo
 - **Bootstrap Admins**: Três contas iniciais (`luigi.gonzaga@db1.com.br`, `bruno.rossmann@db1.com.br`, `jocimar.huss@db1.com.br`) possuem permissões administrativas nativas no código e nas regras de segurança do banco.

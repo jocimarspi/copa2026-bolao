@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
+import { sortUsers, getUsersWithRanks } from "../helpers";
 
 interface HeaderProps {
   currentTab: string;
@@ -49,9 +50,10 @@ export default function Header({ currentTab, setCurrentTab }: HeaderProps) {
   const { users } = useData();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const sortedAllUsers = [...users].sort((a, b) => (b.pts || 0) - (a.pts || 0));
-  const myRankIndex = user ? sortedAllUsers.findIndex(u => u.uid === user.uid) : -1;
-  const myRank = myRankIndex !== -1 ? myRankIndex + 1 : null;
+  const sortedAllUsers = sortUsers(users);
+  const rankedUsers = getUsersWithRanks(sortedAllUsers);
+  const myUserRank = user ? rankedUsers.find(u => u.uid === user.uid) : null;
+  const myRank = myUserRank ? myUserRank.displayRank : null;
 
   const isProfileIncomplete = !!(user && (!userProfile || !userProfile.unit));
 

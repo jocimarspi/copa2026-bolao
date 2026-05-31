@@ -10,6 +10,7 @@ import {
   lockLbl,
   pSt,
   pts,
+  getUserPredictionStats,
   fmtDT,
   TN,
   getFlagUrl,
@@ -137,9 +138,14 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
         ...predictions,
         [mid]: { home: h, away: a }
       };
-      const newTotalPoints = pts(updatedPredictions, results, matches);
+      const stats = getUserPredictionStats(updatedPredictions, results, matches);
 
-      await setDoc(doc(db, "users", user.uid), { pts: newTotalPoints }, { merge: true });
+      await setDoc(doc(db, "users", user.uid), { 
+        pts: stats.pts,
+        exactCount: stats.exactCount,
+        outcomeCount: stats.outcomeCount,
+        wrongCount: stats.wrongCount
+      }, { merge: true });
 
       setSaveStatus(prev => ({ ...prev, [mid]: "saved" }));
     } catch (err: any) {
@@ -192,9 +198,14 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
 
       const updatedPredictions = { ...predictions };
       delete updatedPredictions[mid];
-      const newTotalPoints = pts(updatedPredictions, results, matches);
+      const stats = getUserPredictionStats(updatedPredictions, results, matches);
 
-      await setDoc(doc(db, "users", user.uid), { pts: newTotalPoints }, { merge: true });
+      await setDoc(doc(db, "users", user.uid), { 
+        pts: stats.pts,
+        exactCount: stats.exactCount,
+        outcomeCount: stats.outcomeCount,
+        wrongCount: stats.wrongCount
+      }, { merge: true });
 
       setInputs(prev => ({
         ...prev,

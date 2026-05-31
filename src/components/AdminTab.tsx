@@ -17,6 +17,7 @@ import {
   isOpen, 
   lockLbl, 
   pts, 
+  getUserPredictionStats,
   fmtDT, 
   parseKoDate, 
   TN, 
@@ -157,8 +158,13 @@ export default function AdminTab() {
         });
         
         // Pass matches as 3rd parameter to prevent crash
-        const newPoints = pts(userPredictions, latestResults, matches);
-        await setDoc(doc(db, "users", userId), { pts: newPoints }, { merge: true });
+        const stats = getUserPredictionStats(userPredictions, latestResults, matches);
+        await setDoc(doc(db, "users", userId), { 
+          pts: stats.pts,
+          exactCount: stats.exactCount,
+          outcomeCount: stats.outcomeCount,
+          wrongCount: stats.wrongCount
+        }, { merge: true });
 
         const unit = uData.unit;
         if (unit) {

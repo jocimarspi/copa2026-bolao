@@ -78,8 +78,11 @@ async function recalculateStandings(dbInstance) {
 
     const sgn = (n) => n > 0 ? 1 : n < 0 ? -1 : 0;
 
-    const pts = (preds, RES) => {
+    const getUserStats = (preds, RES) => {
       let p = 0;
+      let exact = 0;
+      let outcome = 0;
+      let wrong = 0;
       for (const [mid, pred] of Object.entries(preds || {})) {
         const r = RES[mid];
         if (!r || r.home === null || r.home === undefined) continue;
@@ -87,13 +90,22 @@ async function recalculateStandings(dbInstance) {
         if (m && m.test) continue;
         if (pred.home === r.home && pred.away === r.away) {
           p += 5;
+          exact += 1;
           continue;
         }
         if (sgn(pred.home - pred.away) === sgn(r.home - r.away)) {
           p += 3;
+          outcome += 1;
+          continue;
         }
+        wrong += 1;
       }
-      return p;
+      return {
+        pts: p,
+        exactCount: exact,
+        outcomeCount: outcome,
+        wrongCount: wrong,
+      };
     };
 
     const usersSnap = await dbInstance.collection("users").get();
@@ -108,11 +120,15 @@ async function recalculateStandings(dbInstance) {
         userPredictions[d.id] = d.data();
       });
 
-      const newPoints = pts(userPredictions, latestResults);
+      const stats = getUserStats(userPredictions, latestResults);
       batch.update(dbInstance.collection("users").doc(userId), {
-        pts: newPoints,
+        pts: stats.pts,
+        exactCount: stats.exactCount,
+        outcomeCount: stats.outcomeCount,
+        wrongCount: stats.wrongCount,
       });
 
+      const newPoints = stats.pts;
       const unit = userDoc.data().unit;
       if (unit) {
         if (!unitTotals[unit]) {

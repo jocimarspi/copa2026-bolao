@@ -15,6 +15,63 @@ export function pts(preds: Record<string, any>, RES: Record<string, any>, MX?: a
   return p;
 }
 
+export function getUserPredictionStats(preds: Record<string, any>, RES: Record<string, any>, MX?: any[], includeTest = false) {
+  let ptsVal = 0;
+  let exactCount = 0;
+  let outcomeCount = 0;
+  let wrongCount = 0;
+
+  for (const [mid, pred] of Object.entries(preds || {})) {
+    const r = RES[mid]; if (!r || r.home === null || r.home === undefined) continue;
+    const m = MX ? MX.find(x => String(x.id) === String(mid)) : null;
+    if (m?.test && !includeTest) continue;
+    
+    if (pred.home === r.home && pred.away === r.away) {
+      ptsVal += 5;
+      exactCount += 1;
+    } else if (sgn(pred.home - pred.away) === sgn(r.home - r.away)) {
+      ptsVal += 3;
+      outcomeCount += 1;
+    } else {
+      wrongCount += 1;
+    }
+  }
+
+  return { pts: ptsVal, exactCount, outcomeCount, wrongCount };
+}
+
+export function sortUsers(usersList: any[]) {
+  return [...usersList].sort((a, b) => {
+    if ((b.pts || 0) !== (a.pts || 0)) {
+      return (b.pts || 0) - (a.pts || 0);
+    }
+    if ((b.exactCount || 0) !== (a.exactCount || 0)) {
+      return (b.exactCount || 0) - (a.exactCount || 0);
+    }
+    if ((b.outcomeCount || 0) !== (a.outcomeCount || 0)) {
+      return (b.outcomeCount || 0) - (a.outcomeCount || 0);
+    }
+    return (a.wrongCount || 0) - (b.wrongCount || 0);
+  });
+}
+
+export function getUsersWithRanks(sortedUsersList: any[]) {
+  let currentRank = 1;
+  return sortedUsersList.map((user, idx) => {
+    if (idx > 0) {
+      const prev = sortedUsersList[idx - 1];
+      const isTied = (user.pts || 0) === (prev.pts || 0) &&
+                     (user.exactCount || 0) === (prev.exactCount || 0) &&
+                     (user.outcomeCount || 0) === (prev.outcomeCount || 0) &&
+                     (user.wrongCount || 0) === (prev.wrongCount || 0);
+      if (!isTied) {
+        currentRank = idx + 1;
+      }
+    }
+    return { ...user, displayRank: currentRank };
+  });
+}
+
 export function ptsRound(preds, roundName, RES, MX) {
   let p = 0;
   const mids = MX.filter(x => x.round === roundName).map(x => String(x.id));

@@ -72,6 +72,7 @@ export default function FaqTab() {
           {renderFaqItem("r2", "faq_r_q2", "faq_r_a2")}
           {renderFaqItem("r3", "faq_r_q3", "faq_r_a3")}
           {renderFaqItem("r4", "faq_r_q4", "faq_r_a4")}
+          {renderFaqItem("r5", "faq_r_q5", "faq_r_a5")}
         </div>
       )}
 

@@ -39,6 +39,9 @@ export interface UserRankInfo {
   emoji: string;
   unit: string;
   pts: number;
+  exactCount?: number;
+  outcomeCount?: number;
+  wrongCount?: number;
 }
 
 export interface Prediction {

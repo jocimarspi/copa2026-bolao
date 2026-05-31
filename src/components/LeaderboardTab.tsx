@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { collection, query, where, getDocs, orderBy, limit, startAfter, QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { useData, UserRankInfo } from "../contexts/DataContext";
-import { RI, RC, fmtName } from "../helpers";
+import { RI, RC, fmtName, sortUsers, getUsersWithRanks } from "../helpers";
 
 export default function LeaderboardTab() {
   const { t } = useTranslation();
@@ -16,80 +16,14 @@ export default function LeaderboardTab() {
   const [unitLoading, setUnitLoading] = useState<Record<string, boolean>>({});
 
   const [showFullRanking, setShowFullRanking] = useState(false);
-  const [fullRankingUsers, setFullRankingUsers] = useState<UserRankInfo[]>([]);
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [visibleRankingLimit, setVisibleRankingLimit] = useState(20);
 
   const [showFullUnitsRanking, setShowFullUnitsRanking] = useState(false);
   const [unitsLimit, setUnitsLimit] = useState(20);
 
-  const ITEMS_PER_PAGE = 20;
-
-  const fetchInitialRanking = async () => {
-    setLoadingMore(true);
-    try {
-      const q = query(
-        collection(db, "users"),
-        orderBy("pts", "desc"),
-        orderBy("__name__", "desc"),
-        limit(ITEMS_PER_PAGE)
-      );
-      const snap = await getDocs(q);
-      const list: UserRankInfo[] = [];
-      snap.forEach(docSnap => {
-        list.push({ uid: docSnap.id, ...docSnap.data() } as UserRankInfo);
-      });
-      setFullRankingUsers(list);
-      if (snap.docs.length < ITEMS_PER_PAGE) {
-        setHasMore(false);
-      } else {
-        setHasMore(true);
-        setLastDoc(snap.docs[snap.docs.length - 1]);
-      }
-    } catch (err) {
-      console.error("Erro ao carregar ranking completo inicial:", err);
-    } finally {
-      setLoadingMore(false);
-    }
-  };
-
-  const fetchMoreRanking = async () => {
-    if (!lastDoc || loadingMore) return;
-    setLoadingMore(true);
-    try {
-      const q = query(
-        collection(db, "users"),
-        orderBy("pts", "desc"),
-        orderBy("__name__", "desc"),
-        startAfter(lastDoc),
-        limit(ITEMS_PER_PAGE)
-      );
-      const snap = await getDocs(q);
-      const list: UserRankInfo[] = [];
-      snap.forEach(docSnap => {
-        list.push({ uid: docSnap.id, ...docSnap.data() } as UserRankInfo);
-      });
-      
-      setFullRankingUsers(prev => [...prev, ...list]);
-      if (snap.docs.length < ITEMS_PER_PAGE) {
-        setHasMore(false);
-        setLastDoc(null);
-      } else {
-        setHasMore(true);
-        setLastDoc(snap.docs[snap.docs.length - 1]);
-      }
-    } catch (err) {
-      console.error("Erro ao carregar mais itens do ranking:", err);
-    } finally {
-      setLoadingMore(false);
-    }
-  };
-
   // 1. General Classification (Top 10 users)
-  const sortedUsers = [...users]
-    .sort((a, b) => (b.pts || 0) - (a.pts || 0))
-    .slice(0, 10);
+  const allRankedUsers = getUsersWithRanks(sortUsers(users));
+  const sortedUsers = allRankedUsers.slice(0, 10);
 
   // 2. Business Units Ranking
   // Calculate stats dynamically based on the current users list
@@ -140,8 +74,9 @@ export default function LeaderboardTab() {
             list.push({ uid: docSnap.id, ...docSnap.data() } as UserRankInfo);
           });
           // Sort and slice top 5
-          list.sort((a, b) => (b.pts || 0) - (a.pts || 0));
-          const top5 = list.slice(0, 5);
+          const sortedList = sortUsers(list);
+          const rankedList = getUsersWithRanks(sortedList);
+          const top5 = rankedList.slice(0, 5);
 
           setUnitMembers(prev => ({ ...prev, [unitKey]: top5 }));
         } catch (err) {
@@ -175,9 +110,10 @@ export default function LeaderboardTab() {
 
     return members.map((m, j) => {
       const isMe = authUser && m.uid === authUser.uid;
+      const rankIdx = m.displayRank !== undefined ? m.displayRank - 1 : j;
       return (
         <div className={`leaderboard__row leaderboard__row--member ${isMe ? "leaderboard__row--me" : ""}`} key={m.uid}>
-          <div className={`leaderboard__rank ${RC(j)}`}>{RI(j)}</div>
+          <div className={`leaderboard__rank ${RC(rankIdx)}`}>{RI(rankIdx)}</div>
           <div className="leaderboard__avatar" style={{ fontSize: "1rem" }}>{m.emoji || "⚽"}</div>
           <div className="leaderboard__info">
             <div className="leaderboard__name" title={m.name} style={{ fontSize: ".82rem" }}>
@@ -195,6 +131,9 @@ export default function LeaderboardTab() {
   };
 
   if (showFullRanking) {
+    const paginatedFullRankingUsers = allRankedUsers.slice(0, visibleRankingLimit);
+    const hasMoreRanking = allRankedUsers.length > visibleRankingLimit;
+
     return (
       <div className="tab tab--active">
         {/* Back button */}
@@ -212,12 +151,13 @@ export default function LeaderboardTab() {
 
         {/* Full Ranking List */}
         <div className="leaderboard">
-          {fullRankingUsers.map((u, i) => {
+          {paginatedFullRankingUsers.map((u, i) => {
             const isMe = authUser && u.uid === authUser.uid;
             const bu = businessUnits[u.unit];
+            const rankIdx = u.displayRank !== undefined ? u.displayRank - 1 : i;
             return (
               <div className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`} key={u.uid}>
-                <div className={`leaderboard__rank ${RC(i)}`}>{RI(i)}</div>
+                <div className={`leaderboard__rank ${RC(rankIdx)}`}>{RI(rankIdx)}</div>
                 <div className="leaderboard__avatar">{u.emoji || "⚽"}</div>
                 <div className="leaderboard__info">
                   <div className="leaderboard__name" title={u.name}>
@@ -242,18 +182,11 @@ export default function LeaderboardTab() {
           })}
         </div>
 
-        {loadingMore && (
-          <div style={{ textAlign: "center", padding: "20px" }}>
-            <div className="live-dot" style={{ width: 10, height: 10 }}></div>
-            <span style={{ marginLeft: 8, fontSize: "0.85rem", color: "var(--muted)" }}>{t("loading")}</span>
-          </div>
-        )}
-
-        {hasMore && !loadingMore && (
+        {hasMoreRanking && (
           <div style={{ textAlign: "center", marginTop: "20px" }}>
             <button 
               className="btn btn--outline" 
-              onClick={fetchMoreRanking}
+              onClick={() => setVisibleRankingLimit(prev => prev + 20)}
               style={{ width: "100%", maxWidth: "300px", padding: "10px 0" }}
             >
               {t("btn_load_more")}
@@ -454,12 +387,13 @@ export default function LeaderboardTab() {
               {(() => {
                 const u = sortedUsers[1];
                 const isMe = authUser && u.uid === authUser.uid;
+                const medalClass = u.displayRank === 1 ? "podium__medal--gold" : u.displayRank === 2 ? "podium__medal--silver" : "podium__medal--bronze";
                 return (
                   <div className={`podium__item podium__item--second ${isMe ? "podium__item--me" : ""}`}>
                     <div className="podium__avatar-wrapper">
                       <div className="podium__avatar">{u.emoji || "⚽"}</div>
                       <div className="podium__ribbon"></div>
-                      <div className="podium__medal podium__medal--silver">2</div>
+                      <div className={`podium__medal ${medalClass}`}>{u.displayRank}</div>
                     </div>
                     <div className="podium__name" title={u.name}>
                       {fmtName(u.name)}
@@ -476,12 +410,13 @@ export default function LeaderboardTab() {
               {(() => {
                 const u = sortedUsers[0];
                 const isMe = authUser && u.uid === authUser.uid;
+                const medalClass = u.displayRank === 1 ? "podium__medal--gold" : u.displayRank === 2 ? "podium__medal--silver" : "podium__medal--bronze";
                 return (
                   <div className={`podium__item podium__item--first ${isMe ? "podium__item--me" : ""}`}>
                     <div className="podium__avatar-wrapper">
                       <div className="podium__avatar">{u.emoji || "⚽"}</div>
                       <div className="podium__ribbon"></div>
-                      <div className="podium__medal podium__medal--gold">1</div>
+                      <div className={`podium__medal ${medalClass}`}>{u.displayRank}</div>
                     </div>
                     <div className="podium__name" title={u.name}>
                       {fmtName(u.name)}
@@ -498,12 +433,13 @@ export default function LeaderboardTab() {
               {(() => {
                 const u = sortedUsers[2];
                 const isMe = authUser && u.uid === authUser.uid;
+                const medalClass = u.displayRank === 1 ? "podium__medal--gold" : u.displayRank === 2 ? "podium__medal--silver" : "podium__medal--bronze";
                 return (
                   <div className={`podium__item podium__item--third ${isMe ? "podium__item--me" : ""}`}>
                     <div className="podium__avatar-wrapper">
                       <div className="podium__avatar">{u.emoji || "⚽"}</div>
                       <div className="podium__ribbon"></div>
-                      <div className="podium__medal podium__medal--bronze">3</div>
+                      <div className={`podium__medal ${medalClass}`}>{u.displayRank}</div>
                     </div>
                     <div className="podium__name" title={u.name}>
                       {fmtName(u.name)}
@@ -523,10 +459,10 @@ export default function LeaderboardTab() {
             {(sortedUsers.length >= 3 ? sortedUsers.slice(3) : sortedUsers).map((u, i) => {
               const isMe = authUser && u.uid === authUser.uid;
               const bu = businessUnits[u.unit];
-              const actualIndex = sortedUsers.length >= 3 ? i + 3 : i;
+              const rankIdx = u.displayRank !== undefined ? u.displayRank - 1 : (sortedUsers.length >= 3 ? i + 3 : i);
               return (
                 <div className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`} key={u.uid}>
-                  <div className={`leaderboard__rank ${RC(actualIndex)}`}>{RI(actualIndex)}</div>
+                  <div className={`leaderboard__rank ${RC(rankIdx)}`}>{RI(rankIdx)}</div>
                   <div className="leaderboard__avatar">{u.emoji || "⚽"}</div>
                   <div className="leaderboard__info">
                     <div className="leaderboard__name" title={u.name}>
@@ -565,9 +501,7 @@ export default function LeaderboardTab() {
                 }}
                 onClick={() => {
                   setShowFullRanking(true);
-                  if (fullRankingUsers.length === 0) {
-                    fetchInitialRanking();
-                  }
+                  setVisibleRankingLimit(20);
                 }}
               >
                 {t("btn_view_full_ranking")} ➔
