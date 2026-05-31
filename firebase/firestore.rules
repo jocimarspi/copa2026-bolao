@@ -34,9 +34,10 @@ service cloud.firestore {
       allow read: if true;
       allow create: if request.auth != null 
         && request.auth.uid == userId 
-        && (!('pts' in request.resource.data) || request.resource.data.pts == 0);
+        && (!('pts' in request.resource.data) || request.resource.data.pts == 0)
+        && (isAdmin() || request.resource.data.name == request.auth.token.name || request.auth.token.name == null);
       allow update: if request.auth != null && (
-        (request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['pts']))
+        (request.auth.uid == userId && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['pts', 'name']))
         || isAdmin()
       );
       allow delete: if isAdmin();

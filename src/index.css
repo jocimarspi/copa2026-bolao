@@ -1196,6 +1196,22 @@ select:focus {
   border-color: var(--gold);
 }
 
+input[readonly],
+input[disabled],
+select[disabled] {
+  background-color: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+input[readonly]:focus,
+input[disabled]:focus,
+select[disabled]:focus {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
 select option {
   background: #111;
 }

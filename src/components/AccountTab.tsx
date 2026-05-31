@@ -22,7 +22,8 @@ export default function AccountTab({ setCurrentTab }: AccountTabProps) {
     logout, 
     saveProfile,
     authError,
-    setAuthError
+    setAuthError,
+    isAdmin
   } = useAuth();
   const { businessUnits, predictions, results, matches } = useData();
 
@@ -147,6 +148,7 @@ export default function AccountTab({ setCurrentTab }: AccountTabProps) {
                 value={name} 
                 onChange={(e) => setName(e.target.value)}
                 disabled={saving}
+                readOnly={!isAdmin}
               />
             </div>
 
