@@ -415,43 +415,118 @@ export default function LeaderboardTab() {
       <div className="section-title">{t("general_classification")}</div>
       
       {/* 1. General Ranking List */}
-      <div className="leaderboard">
-        {dataLoading ? (
-          // Skeleton loading
-          <>
-            <div className="leaderboard__row" style={{ opacity: 0.5 }}>
-              <div className="skeleton" style={{ width: 25, height: 20 }}></div>
-              <div className="skeleton skeleton-avatar"></div>
-              <div className="leaderboard__info">
-                <div className="skeleton skeleton-text" style={{ width: 130 }}></div>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div className="skeleton" style={{ width: 35, height: 20 }}></div>
-              </div>
+      {dataLoading ? (
+        <div className="leaderboard">
+          {/* Skeleton loading */}
+          <div className="leaderboard__row" style={{ opacity: 0.5 }}>
+            <div className="skeleton" style={{ width: 25, height: 20 }}></div>
+            <div className="skeleton skeleton-avatar"></div>
+            <div className="leaderboard__info">
+              <div className="skeleton skeleton-text" style={{ width: 130 }}></div>
             </div>
-            <div className="leaderboard__row" style={{ opacity: 0.3 }}>
-              <div className="skeleton" style={{ width: 25, height: 20 }}></div>
-              <div className="skeleton skeleton-avatar"></div>
-              <div className="leaderboard__info">
-                <div className="skeleton skeleton-text" style={{ width: 100 }}></div>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div className="skeleton" style={{ width: 35, height: 20 }}></div>
-              </div>
+            <div style={{ textAlign: "right" }}>
+              <div className="skeleton" style={{ width: 35, height: 20 }}></div>
             </div>
-          </>
-        ) : sortedUsers.length === 0 ? (
+          </div>
+          <div className="leaderboard__row" style={{ opacity: 0.3 }}>
+            <div className="skeleton" style={{ width: 25, height: 20 }}></div>
+            <div className="skeleton skeleton-avatar"></div>
+            <div className="leaderboard__info">
+              <div className="skeleton skeleton-text" style={{ width: 100 }}></div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div className="skeleton" style={{ width: 35, height: 20 }}></div>
+            </div>
+          </div>
+        </div>
+      ) : sortedUsers.length === 0 ? (
+        <div className="leaderboard">
           <div style={{ color: "var(--muted)", textAlign: "center", padding: "36px" }}>
             {t("lb_empty")}
           </div>
-        ) : (
-          <>
-            {sortedUsers.map((u, i) => {
+        </div>
+      ) : (
+        <>
+          {/* Podium for Top 3 */}
+          {sortedUsers.length >= 3 && (
+            <div className="podium">
+              {/* 2nd Place */}
+              {(() => {
+                const u = sortedUsers[1];
+                const isMe = authUser && u.uid === authUser.uid;
+                return (
+                  <div className={`podium__item podium__item--second ${isMe ? "podium__item--me" : ""}`}>
+                    <div className="podium__avatar-wrapper">
+                      <div className="podium__avatar">{u.emoji || "⚽"}</div>
+                      <div className="podium__ribbon"></div>
+                      <div className="podium__medal podium__medal--silver">2</div>
+                    </div>
+                    <div className="podium__name" title={u.name}>
+                      {fmtName(u.name)}
+                      {isMe && <span style={{ color: "var(--gold)", fontSize: ".65rem" }}> ({t("user_you").toLowerCase()})</span>}
+                    </div>
+                    <div className="podium__points">
+                      {u.pts || 0} <span className="podium__points-label">{t("pts_label")}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 1st Place */}
+              {(() => {
+                const u = sortedUsers[0];
+                const isMe = authUser && u.uid === authUser.uid;
+                return (
+                  <div className={`podium__item podium__item--first ${isMe ? "podium__item--me" : ""}`}>
+                    <div className="podium__avatar-wrapper">
+                      <div className="podium__avatar">{u.emoji || "⚽"}</div>
+                      <div className="podium__ribbon"></div>
+                      <div className="podium__medal podium__medal--gold">1</div>
+                    </div>
+                    <div className="podium__name" title={u.name}>
+                      {fmtName(u.name)}
+                      {isMe && <span style={{ color: "var(--gold)", fontSize: ".65rem" }}> ({t("user_you").toLowerCase()})</span>}
+                    </div>
+                    <div className="podium__points">
+                      {u.pts || 0} <span className="podium__points-label">{t("pts_label")}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 3rd Place */}
+              {(() => {
+                const u = sortedUsers[2];
+                const isMe = authUser && u.uid === authUser.uid;
+                return (
+                  <div className={`podium__item podium__item--third ${isMe ? "podium__item--me" : ""}`}>
+                    <div className="podium__avatar-wrapper">
+                      <div className="podium__avatar">{u.emoji || "⚽"}</div>
+                      <div className="podium__ribbon"></div>
+                      <div className="podium__medal podium__medal--bronze">3</div>
+                    </div>
+                    <div className="podium__name" title={u.name}>
+                      {fmtName(u.name)}
+                      {isMe && <span style={{ color: "var(--gold)", fontSize: ".65rem" }}> ({t("user_you").toLowerCase()})</span>}
+                    </div>
+                    <div className="podium__points">
+                      {u.pts || 0} <span className="podium__points-label">{t("pts_label")}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Remaining users in vertical list */}
+          <div className="leaderboard">
+            {(sortedUsers.length >= 3 ? sortedUsers.slice(3) : sortedUsers).map((u, i) => {
               const isMe = authUser && u.uid === authUser.uid;
               const bu = businessUnits[u.unit];
+              const actualIndex = sortedUsers.length >= 3 ? i + 3 : i;
               return (
                 <div className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`} key={u.uid}>
-                  <div className={`leaderboard__rank ${RC(i)}`}>{RI(i)}</div>
+                  <div className={`leaderboard__rank ${RC(actualIndex)}`}>{RI(actualIndex)}</div>
                   <div className="leaderboard__avatar">{u.emoji || "⚽"}</div>
                   <div className="leaderboard__info">
                     <div className="leaderboard__name" title={u.name}>
@@ -498,9 +573,9 @@ export default function LeaderboardTab() {
                 {t("btn_view_full_ranking")} ➔
               </button>
             )}
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      )}
 
       {/* 2. Units Ranking List */}
       <div className="section-title" style={{ marginTop: "28px" }}>
