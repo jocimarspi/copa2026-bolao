@@ -1,0 +1,11 @@
+# Project Rules: Bolão Copa 2026
+
+You MUST refer to the modularized context files in the `.context/` folder before making any design, business logic, or technical decisions.
+
+## Key Guidelines:
+1. **Context Index**: Read `.context/index.md` first to understand the document layout.
+2. **Project Goals**: Refer to `.context/project_goal.md` for goals and scopes.
+3. **Tech Stack**: Refer to `.context/stack.md` for tools, languages, and APIs (e.g. Football-Data.org API, Firebase Web SDK v12, React 19).
+4. **Architecture**: Refer to `.context/architecture.md` for the database schema, folder structures, and overall architecture.
+5. **Restrictions**: Refer to `.context/restrictions.md` for critical constraints (e.g. the 30-minute lock window, Firebase Security Rules, pure vanilla CSS rule).
+6. **Glossary**: Refer to `.context/glossary.md` for project terms.

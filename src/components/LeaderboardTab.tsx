@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, orderBy, limit, startAfter, QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { useData, UserRankInfo } from "../contexts/DataContext";
@@ -14,6 +14,74 @@ export default function LeaderboardTab() {
   const [expandedUnits, setExpandedUnits] = useState<Set<string>>(new Set());
   const [unitMembers, setUnitMembers] = useState<Record<string, UserRankInfo[]>>({});
   const [unitLoading, setUnitLoading] = useState<Record<string, boolean>>({});
+
+  const [showFullRanking, setShowFullRanking] = useState(false);
+  const [fullRankingUsers, setFullRankingUsers] = useState<UserRankInfo[]>([]);
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const ITEMS_PER_PAGE = 20;
+
+  const fetchInitialRanking = async () => {
+    setLoadingMore(true);
+    try {
+      const q = query(
+        collection(db, "users"),
+        orderBy("pts", "desc"),
+        orderBy("__name__", "desc"),
+        limit(ITEMS_PER_PAGE)
+      );
+      const snap = await getDocs(q);
+      const list: UserRankInfo[] = [];
+      snap.forEach(docSnap => {
+        list.push({ uid: docSnap.id, ...docSnap.data() } as UserRankInfo);
+      });
+      setFullRankingUsers(list);
+      if (snap.docs.length < ITEMS_PER_PAGE) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+        setLastDoc(snap.docs[snap.docs.length - 1]);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar ranking completo inicial:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  const fetchMoreRanking = async () => {
+    if (!lastDoc || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const q = query(
+        collection(db, "users"),
+        orderBy("pts", "desc"),
+        orderBy("__name__", "desc"),
+        startAfter(lastDoc),
+        limit(ITEMS_PER_PAGE)
+      );
+      const snap = await getDocs(q);
+      const list: UserRankInfo[] = [];
+      snap.forEach(docSnap => {
+        list.push({ uid: docSnap.id, ...docSnap.data() } as UserRankInfo);
+      });
+      
+      setFullRankingUsers(prev => [...prev, ...list]);
+      if (snap.docs.length < ITEMS_PER_PAGE) {
+        setHasMore(false);
+        setLastDoc(null);
+      } else {
+        setHasMore(true);
+        setLastDoc(snap.docs[snap.docs.length - 1]);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar mais itens do ranking:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   // 1. General Classification (Top 10 users)
   const sortedUsers = [...users]
@@ -123,6 +191,76 @@ export default function LeaderboardTab() {
     });
   };
 
+  if (showFullRanking) {
+    return (
+      <div className="tab tab--active">
+        {/* Back button */}
+        <div style={{ marginBottom: "16px" }}>
+          <button 
+            className="btn btn--outline btn--sm" 
+            onClick={() => setShowFullRanking(false)}
+            style={{ display: "flex", alignItems: "center", gap: "6px" }}
+          >
+            {t("btn_back_to_summary")}
+          </button>
+        </div>
+
+        <div className="section-title">{t("full_ranking_title")}</div>
+
+        {/* Full Ranking List */}
+        <div className="leaderboard">
+          {fullRankingUsers.map((u, i) => {
+            const isMe = authUser && u.uid === authUser.uid;
+            const bu = businessUnits[u.unit];
+            return (
+              <div className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`} key={u.uid}>
+                <div className={`leaderboard__rank ${RC(i)}`}>{RI(i)}</div>
+                <div className="leaderboard__avatar">{u.emoji || "⚽"}</div>
+                <div className="leaderboard__info">
+                  <div className="leaderboard__name" title={u.name}>
+                    {fmtName(u.name)}
+                    {isMe && <span style={{ color: "var(--gold)", fontSize: ".68rem" }}> ({t("user_you").toLowerCase()})</span>}
+                  </div>
+                  {bu && (
+                    <div 
+                      className="leaderboard__unit-tag" 
+                      style={{ backgroundColor: bu.bg, color: bu.text }}
+                    >
+                      {bu.label}
+                    </div>
+                  )}
+                </div>
+                <div className="leaderboard__points-col">
+                  <div className="leaderboard__points">{u.pts || 0}</div>
+                  <div className="leaderboard__points-label">{t("pts_label")}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {loadingMore && (
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <div className="live-dot" style={{ width: 10, height: 10 }}></div>
+            <span style={{ marginLeft: 8, fontSize: "0.85rem", color: "var(--muted)" }}>{t("loading")}</span>
+          </div>
+        )}
+
+        {hasMore && !loadingMore && (
+          <div style={{ textAlign: "center", marginTop: "20px" }}>
+            <button 
+              className="btn btn--outline" 
+              onClick={fetchMoreRanking}
+              style={{ width: "100%", maxWidth: "300px", padding: "10px 0" }}
+            >
+              {t("btn_load_more")}
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="tab tab--active">
       {/* Slim Hero section */}
@@ -178,34 +316,60 @@ export default function LeaderboardTab() {
             {t("lb_empty")}
           </div>
         ) : (
-          sortedUsers.map((u, i) => {
-            const isMe = authUser && u.uid === authUser.uid;
-            const bu = businessUnits[u.unit];
-            return (
-              <div className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`} key={u.uid}>
-                <div className={`leaderboard__rank ${RC(i)}`}>{RI(i)}</div>
-                <div className="leaderboard__avatar">{u.emoji || "⚽"}</div>
-                <div className="leaderboard__info">
-                  <div className="leaderboard__name" title={u.name}>
-                    {fmtName(u.name)}
-                    {isMe && <span style={{ color: "var(--gold)", fontSize: ".68rem" }}> ({t("user_you").toLowerCase()})</span>}
-                  </div>
-                  {bu && (
-                    <div 
-                      className="leaderboard__unit-tag" 
-                      style={{ backgroundColor: bu.bg, color: bu.text }}
-                    >
-                      {bu.label}
+          <>
+            {sortedUsers.map((u, i) => {
+              const isMe = authUser && u.uid === authUser.uid;
+              const bu = businessUnits[u.unit];
+              return (
+                <div className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`} key={u.uid}>
+                  <div className={`leaderboard__rank ${RC(i)}`}>{RI(i)}</div>
+                  <div className="leaderboard__avatar">{u.emoji || "⚽"}</div>
+                  <div className="leaderboard__info">
+                    <div className="leaderboard__name" title={u.name}>
+                      {fmtName(u.name)}
+                      {isMe && <span style={{ color: "var(--gold)", fontSize: ".68rem" }}> ({t("user_you").toLowerCase()})</span>}
                     </div>
-                  )}
+                    {bu && (
+                      <div 
+                        className="leaderboard__unit-tag" 
+                        style={{ backgroundColor: bu.bg, color: bu.text }}
+                      >
+                        {bu.label}
+                      </div>
+                    )}
+                  </div>
+                  <div className="leaderboard__points-col">
+                    <div className="leaderboard__points">{u.pts || 0}</div>
+                    <div className="leaderboard__points-label">{t("pts_label")}</div>
+                  </div>
                 </div>
-                <div className="leaderboard__points-col">
-                  <div className="leaderboard__points">{u.pts || 0}</div>
-                  <div className="leaderboard__points-label">{t("pts_label")}</div>
-                </div>
-              </div>
-            );
-          })
+              );
+            })}
+
+            {users.length > 10 && (
+              <button 
+                className="leaderboard__row" 
+                style={{ 
+                  width: "100%", 
+                  justifyContent: "center", 
+                  cursor: "pointer", 
+                  background: "rgba(255, 255, 255, 0.02)", 
+                  borderStyle: "dashed",
+                  fontWeight: 700,
+                  fontSize: "0.85rem",
+                  color: "var(--gold)"
+                }}
+                onClick={() => {
+                  setShowFullRanking(true);
+                  if (fullRankingUsers.length === 0) {
+                    fetchInitialRanking();
+                  }
+                }}
+              >
+                {t("btn_view_full_ranking")} ➔
+              </button>
+            )}
+          </>
         )}
       </div>
 
