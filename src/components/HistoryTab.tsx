@@ -79,7 +79,7 @@ export default function HistoryTab() {
                   </span>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                   {roundGames.map((m) => {
                     const r = results[m.id];
                     const done = r && r.home !== null;
@@ -92,27 +92,48 @@ export default function HistoryTab() {
                         style={{ 
                           backgroundColor: "var(--card2)", 
                           border: "1px solid var(--border)", 
-                          borderRadius: "7px", 
-                          padding: "10px 13px", 
+                          borderRadius: "8px", 
+                          padding: "12px 16px", 
                           display: "flex", 
                           alignItems: "center", 
-                          gap: "10px", 
-                          flexWrap: "wrap" 
+                          justifyContent: "space-between",
+                          gap: "16px" 
                         }}
                       >
-                        <span style={{ fontSize: ".83rem", fontWeight: 600, flex: 1 }}>
-                          {homeFlag && <img src={homeFlag} style={{ marginRight: 6, verticalAlign: "middle" }} alt="" />}
-                          {TN(m.h)} × {TN(m.a)} 
-                          {awayFlag && <img src={awayFlag} style={{ marginLeft: 6, verticalAlign: "middle" }} alt="" />}
-                        </span>
-                        <span style={{ fontSize: ".8rem" }}>
-                          {done ? (
-                            <strong style={{ color: "var(--gold)" }}>{r.home} × {r.away}</strong>
-                          ) : (
-                            <span style={{ color: "var(--muted)" }}>– × –</span>
-                          )}
-                        </span>
-                        {getPredictionStatusBadge(m, r)}
+                        {/* Conteúdo */}
+                        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", minWidth: 0 }}>
+                          {/* Linha do jogo: nome_casa bandeira placar x placar bandeira nome_visitante */}
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.85rem", fontWeight: 600, width: "100%" }}>
+                            <span style={{ flex: 1, textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={TN(m.h)}>
+                              {TN(m.h)}
+                            </span>
+                            {homeFlag && <img src={homeFlag} style={{ width: "20px", height: "auto", flexShrink: 0 }} alt="" />}
+                            <span style={{ display: "inline-flex", gap: "4px", color: "var(--gold)", fontWeight: 700, minWidth: "50px", justifyContent: "center", flexShrink: 0 }}>
+                              {done ? (
+                                <>
+                                  <span>{r.home}</span>
+                                  <span style={{ color: "var(--muted)", fontWeight: "normal" }}>x</span>
+                                  <span>{r.away}</span>
+                                </>
+                              ) : (
+                                <span style={{ color: "var(--muted)", fontWeight: "normal" }}>– x –</span>
+                              )}
+                            </span>
+                            {awayFlag && <img src={awayFlag} style={{ width: "20px", height: "auto", flexShrink: 0 }} alt="" />}
+                            <span style={{ flex: 1, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={TN(m.a)}>
+                              {TN(m.a)}
+                            </span>
+                          </div>
+                          {/* Linha de info: data e hora */}
+                          <div style={{ fontSize: "0.72rem", color: "var(--muted)", textAlign: "center" }}>
+                            {fmtDT(m.ko).d} · {fmtDT(m.ko).t}
+                          </div>
+                        </div>
+
+                        {/* Pontuação */}
+                        <div style={{ display: "flex", alignItems: "center", minWidth: "fit-content", flexShrink: 0 }}>
+                          {getPredictionStatusBadge(m, r)}
+                        </div>
                       </div>
                     );
                   })}
@@ -135,11 +156,14 @@ export default function HistoryTab() {
               <div className="section-title" style={{ marginTop: "24px" }}>
                 {t("history_copa_title")}
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {completedOfficialMatches.map((m) => {
                   const r = results[m.id];
                   const homeFlag = getFlagUrl(m.h);
                   const awayFlag = getFlagUrl(m.a);
+                  const groupLabel = m.g ? `${t("group_short")}${m.g}` : "";
+                  const roundLabel = m.rod === "R1" ? t("pred_r1") : m.rod === "R2" ? t("pred_r2") : m.rod === "R3" ? t("pred_r3") : m.rod;
+                  const phaseInfo = groupLabel && roundLabel ? `${groupLabel} · ${roundLabel}` : (groupLabel || roundLabel || "");
 
                   return (
                     <div 
@@ -147,26 +171,42 @@ export default function HistoryTab() {
                       style={{ 
                         backgroundColor: "var(--card2)", 
                         border: "1px solid var(--border)", 
-                        borderRadius: "7px", 
-                        padding: "10px 13px", 
+                        borderRadius: "8px", 
+                        padding: "12px 16px", 
                         display: "flex", 
                         alignItems: "center", 
-                        gap: "10px", 
-                        flexWrap: "wrap" 
+                        justifyContent: "space-between",
+                        gap: "16px" 
                       }}
                     >
-                      <span style={{ fontSize: ".83rem", fontWeight: 600, flex: 1 }}>
-                        {homeFlag && <img src={homeFlag} style={{ marginRight: 6, verticalAlign: "middle" }} alt="" />}
-                        {TN(m.h)} × {TN(m.a)}
-                        {awayFlag && <img src={awayFlag} style={{ marginLeft: 6, verticalAlign: "middle" }} alt="" />}
-                      </span>
-                      <span style={{ fontSize: ".7rem", color: "var(--muted)" }}>
-                        {fmtDT(m.ko).d} · {t("group_short")}{m.g}
-                      </span>
-                      <span style={{ fontSize: ".8rem" }}>
-                        <strong style={{ color: "var(--gold)" }}>{r.home} × {r.away}</strong>
-                      </span>
-                      {getPredictionStatusBadge(m, r)}
+                      {/* Conteúdo */}
+                      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px", minWidth: 0 }}>
+                        {/* Linha do jogo: nome_casa bandeira placar x placar bandeira nome_visitante */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.85rem", fontWeight: 600, width: "100%" }}>
+                          <span style={{ flex: 1, textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={TN(m.h)}>
+                            {TN(m.h)}
+                          </span>
+                          {homeFlag && <img src={homeFlag} style={{ width: "20px", height: "auto", flexShrink: 0 }} alt="" />}
+                          <span style={{ display: "inline-flex", gap: "4px", color: "var(--gold)", fontWeight: 700, minWidth: "50px", justifyContent: "center", flexShrink: 0 }}>
+                            <span>{r.home}</span>
+                            <span style={{ color: "var(--muted)", fontWeight: "normal" }}>x</span>
+                            <span>{r.away}</span>
+                          </span>
+                          {awayFlag && <img src={awayFlag} style={{ width: "20px", height: "auto", flexShrink: 0 }} alt="" />}
+                          <span style={{ flex: 1, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={TN(m.a)}>
+                            {TN(m.a)}
+                          </span>
+                        </div>
+                        {/* Linha de info: data e hora · info grupo/matamata */}
+                        <div style={{ fontSize: "0.72rem", color: "var(--muted)", textAlign: "center" }}>
+                          {fmtDT(m.ko).d} · {fmtDT(m.ko).t} · {phaseInfo}
+                        </div>
+                      </div>
+
+                      {/* Pontuação */}
+                      <div style={{ display: "flex", alignItems: "center", minWidth: "fit-content", flexShrink: 0 }}>
+                        {getPredictionStatusBadge(m, r)}
+                      </div>
                     </div>
                   );
                 })}
