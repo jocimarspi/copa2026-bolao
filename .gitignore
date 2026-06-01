@@ -31,3 +31,8 @@ dist-ssr
 !.yarn/sdks
 !.yarn/versions
 
+# Firebase Credentials
+*-key.json
+firebase-key.json
+
+
