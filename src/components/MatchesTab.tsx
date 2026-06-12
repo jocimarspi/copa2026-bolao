@@ -29,6 +29,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
   const { showModal } = useModal();
 
   const [currentFilter, setCurrentFilter] = useState<string>("todos");
+  const [showFinished, setShowFinished] = useState<boolean>(false);
   const [inputs, setInputs] = useState<Record<number, ScoreInputs>>({});
   const [savingIds, setSavingIds] = useState<Set<number>>(new Set());
   const [saveStatus, setSaveStatus] = useState<Record<number, "idle" | "saving" | "saved" | "error">>({});
@@ -234,16 +235,32 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
   // Filter and sort matches
   let filteredMatches = [...matches];
   if (currentFilter === "teste") {
-    filteredMatches = filteredMatches
-      .filter(m => m.test)
-      .sort((a, b) => parseKoDate(a.ko).getTime() - parseKoDate(b.ko).getTime());
+    filteredMatches = filteredMatches.filter(m => m.test);
   } else {
     filteredMatches = filteredMatches.filter(m => !m.test);
     if (currentFilter !== "todos") {
       filteredMatches = filteredMatches.filter(m => m.rod === currentFilter);
     }
-    filteredMatches.sort((a, b) => parseKoDate(a.ko).getTime() - parseKoDate(b.ko).getTime());
   }
+
+  // Filter finished matches if toggle is off, but keep finished matches of today
+  if (!showFinished) {
+    const today = new Date();
+    filteredMatches = filteredMatches.filter(m => {
+      const r = results[m.id];
+      const done = r && r.home !== null;
+      if (!done) return true; // not finished, show it
+      
+      // it is finished, check if it was today
+      const matchDate = parseKoDate(m.ko);
+      const isToday = matchDate.getFullYear() === today.getFullYear() &&
+                      matchDate.getMonth() === today.getMonth() &&
+                      matchDate.getDate() === today.getDate();
+      return isToday;
+    });
+  }
+
+  filteredMatches.sort((a, b) => parseKoDate(a.ko).getTime() - parseKoDate(b.ko).getTime());
 
   // Calculate overall user points
   const userTotalPoints = user ? pts(predictions, results, matches) : 0;
@@ -276,37 +293,52 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
       )}
 
       {/* Filters bar */}
-      <div className="filters-bar" style={{ display: "flex", gap: "5px", marginBottom: "16px", flexWrap: "wrap" }}>
-        <button
-          className={`filter-btn ${currentFilter === "todos" ? "is-active" : ""}`}
-          onClick={() => setCurrentFilter("todos")}
+      <div className="filters-bar" style={{ display: "flex", gap: "12px", marginBottom: "16px", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+        <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+          <button
+            className={`filter-btn ${currentFilter === "todos" ? "is-active" : ""}`}
+            onClick={() => setCurrentFilter("todos")}
+          >
+            {t("filter_all") || "Todos"}
+          </button>
+          <button
+            className={`filter-btn ${currentFilter === "R1" ? "is-active" : ""}`}
+            onClick={() => setCurrentFilter("R1")}
+          >
+            {t("pred_r1")}
+          </button>
+          <button
+            className={`filter-btn ${currentFilter === "R2" ? "is-active" : ""}`}
+            onClick={() => setCurrentFilter("R2")}
+          >
+            {t("pred_r2")}
+          </button>
+          <button
+            className={`filter-btn ${currentFilter === "R3" ? "is-active" : ""}`}
+            onClick={() => setCurrentFilter("R3")}
+          >
+            {t("pred_r3")}
+          </button>
+          <button
+            className={`filter-btn ${currentFilter === "teste" ? "is-active" : ""}`}
+            onClick={() => setCurrentFilter("teste")}
+          >
+            🧪 {t("filter_test") || "Testes"}
+          </button>
+        </div>
+
+        <div
+          className={`toggle-switch-container ${showFinished ? "is-active" : ""}`}
+          onClick={() => setShowFinished(!showFinished)}
+          style={{ display: "flex", alignItems: "center" }}
         >
-          {t("filter_all") || "Todos"}
-        </button>
-        <button
-          className={`filter-btn ${currentFilter === "R1" ? "is-active" : ""}`}
-          onClick={() => setCurrentFilter("R1")}
-        >
-          {t("pred_r1")}
-        </button>
-        <button
-          className={`filter-btn ${currentFilter === "R2" ? "is-active" : ""}`}
-          onClick={() => setCurrentFilter("R2")}
-        >
-          {t("pred_r2")}
-        </button>
-        <button
-          className={`filter-btn ${currentFilter === "R3" ? "is-active" : ""}`}
-          onClick={() => setCurrentFilter("R3")}
-        >
-          {t("pred_r3")}
-        </button>
-        <button
-          className={`filter-btn ${currentFilter === "teste" ? "is-active" : ""}`}
-          onClick={() => setCurrentFilter("teste")}
-        >
-          🧪 {t("filter_test") || "Testes"}
-        </button>
+          <div className="toggle-switch">
+            <span className="toggle-switch__slider"></span>
+          </div>
+          <span className="toggle-switch__label">
+            {t("show_finished_matches") || "Mostrar jogos encerrados"}
+          </span>
+        </div>
       </div>
 
       {/* Match cards list */}

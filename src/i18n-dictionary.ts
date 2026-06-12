@@ -76,6 +76,7 @@ export const translations = {
     "faq_s_q4": "Preciso me preocupar com LGPD?",
     "faq_s_a4": "Como o login da empresa é utilizado, nenhuma informação sensível é gravada ou armazenada no aplicativo.",
 
+    "show_finished_matches": "Mostrar jogos encerrados",
     "btn_confirm": "Confirmar",
     "btn_cancel": "Cancelar",
     "stats_exact_scores": "Quantidade de Placares Exatos",
@@ -366,6 +367,7 @@ export const translations = {
     "faq_s_q4": "¿Debo preocuparme por la LGPD (Ley General de Protección de Datos)?",
     "faq_s_a4": "Como se utiliza el inicio de sesión de la empresa, ninguna información sensible se graba o almacena en la aplicación.",
 
+    "show_finished_matches": "Mostrar partidos finalizados",
     "btn_confirm": "Confirmar",
     "btn_cancel": "Cancelar",
     "stats_exact_scores": "Cantidad de Marcadores Exactos",
@@ -656,6 +658,7 @@ export const translations = {
     "faq_s_q4": "Do I need to worry about data privacy laws?",
     "faq_s_a4": "Since corporate login is used, no sensitive information is recorded or stored in the application.",
 
+    "show_finished_matches": "Show finished matches",
     "btn_confirm": "Confirm",
     "btn_cancel": "Cancel",
     "stats_exact_scores": "Quantity of Exact Scores",
