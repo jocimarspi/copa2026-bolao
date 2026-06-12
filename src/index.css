@@ -203,6 +203,10 @@ body {
   filter: grayscale(20%);
 }
 
+[data-theme="light"] #watermark {
+  content: url("./assets/watermark-light.png");
+}
+
 /* ══════════════ HEADER ══════════════ */
 header {
   background: var(--header-bg);
