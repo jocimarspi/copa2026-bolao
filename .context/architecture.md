@@ -10,6 +10,7 @@ graph TD
         React[React 19 / Vite]
         AuthContext[AuthContext - Microsoft SSO]
         DataContext[DataContext - Realtime Listeners]
+        ThemeContext[ThemeContext - Light/Dark Theme]
     end
 
     subgraph Firebase [Backend Serverless]
@@ -36,27 +37,35 @@ graph TD
     React -->|Imagens de Bandeiras| FlagCDN
 ```
 
-## Estrutura de Diretórios do Frontend
+## Estrutura de Diretórios do Projeto
 
 ```
-/src
-  ├── main.tsx             # Ponto de entrada do React
-  ├── App.tsx              # Componente raiz e roteador das abas
-  ├── index.css            # Estilização vanilla centralizada
-  ├── i18n.ts              # Configuração de tradução (i18next)
-  ├── i18n-dictionary.ts   # Chaves de tradução (PT/EN/ES)
-  ├── components/          # Componentes das abas
-  │     ├── Header.tsx       # Cabeçalho unificado e resumo do usuário
-  │     ├── MatchesTab.tsx   # Visualização e inserção de palpites
-  │     ├── LeaderboardTab.tsx # Rankings individuais e por unidades
-  │     ├── HistoryTab.tsx   # Consulta de palpites históricos de terceiros
-  │     ├── AccountTab.tsx   # Perfil e seleção de unidade corporativa
-  │     ├── AdminTab.tsx     # Painel de controle do administrador
-  │     └── FaqTab.tsx       # Dúvidas e regras
-  ├── contexts/            # Provedores de estado global
-  │     ├── AuthContext.tsx  # Estado de login e privilégios
-  │     ├── DataContext.tsx  # Listeners em tempo real do Firestore
-  │     └── ModalContext.tsx # Controle de modais globais
+├── /scripts               # Scripts utilitários de backend/manutenção
+│     └── reset-db.js      # Script de reset do banco de dados (emulator/prod)
+├── /firebase              # Configuração do Firebase e Cloud Functions
+│     ├── firestore.rules  # Regras de segurança do Firestore
+│     └── /functions       # Código fonte das Cloud Functions (v2)
+│           └── index.js   # Gatilhos de agendamento e sincronização da API
+├── /src                   # Código fonte da SPA React
+│     ├── main.tsx         # Ponto de entrada do React
+│     ├── App.tsx          # Componente raiz e roteador de abas/temas
+│     ├── index.css        # Estilização vanilla (design system light/dark)
+│     ├── i18n.ts          # Configuração de tradução (i18next)
+│     ├── i18n-dictionary.ts # Chaves de tradução (PT/EN/ES)
+│     ├── assets/          # Imagens, logotipos e marcas d'água (light/dark)
+│     ├── components/      # Componentes das abas
+│     │     ├── Header.tsx       # Cabeçalho, avatar, idioma e switch de tema
+│     │     ├── MatchesTab.tsx   # Visualização e inserção de palpites
+│     │     ├── LeaderboardTab.tsx # Rankings individuais e por unidades
+│     │     ├── HistoryTab.tsx   # Consulta de palpites históricos de terceiros
+│     │     ├── AccountTab.tsx   # Perfil e seleção de unidade corporativa
+│     │     ├── AdminTab.tsx     # Painel de controle do administrador
+│     │     └── FaqTab.tsx       # Dúvidas e regras
+│     └── contexts/        # Provedores de estado global
+│           ├── AuthContext.tsx  # Estado de login e privilégios
+│           ├── DataContext.tsx  # Listeners em tempo real do Firestore
+│           ├── ModalContext.tsx # Controle de modais globais
+│           └── ThemeContext.tsx # Gerenciamento de tema (light/dark)
 ```
 
 ## Modelo de Dados (Firestore)

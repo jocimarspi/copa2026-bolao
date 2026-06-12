@@ -35,18 +35,25 @@ Caso dois ou mais participantes possuam a mesma pontuação, o desempate é feit
 
 ## 4. Diretrizes de Código e Interface
 - **Estilização**: Uso exclusivo de CSS Vanilla customizado no arquivo `/src/index.css`. Frameworks como Tailwind CSS são proibidos a menos que haja solicitação explícita do usuário.
-- **Preservação de Layout**: O tema dark premium e a paleta de cores dos ecossistemas corporativos devem ser mantidos sem alterações que quebrem a consistência visual.
+- **Suporte a Temas (Dual Theme)**: O sistema suporta dois temas: escuro (padrão/dark premium) e claro (soft warm-paper) com troca manual via alternador no cabeçalho.
+- **Marca d'Água Dinâmica**: Quando o tema claro está ativo, a marca d'água de fundo deve ser trocada automaticamente para o asset adequado através da regra CSS:
+  ```css
+  [data-theme="light"] #watermark {
+    content: url("./assets/watermark-light.png");
+  }
+  ```
+- **Preservação de Layout**: A paleta de cores dos ecossistemas corporativos deve ser mantida consistente em ambos os temas sem quebras visuais.
 - **Internacionalização (i18n)**: Todas as strings do sistema devem passar pelo dicionário de traduções (`src/i18n-dictionary.ts`) cobrindo Português, Inglês e Espanhol.
+
+## 5. Conectividade e Resiliência (Cloud Functions)
+- **Tratamento de Falhas na API (Retry/Fetch)**: Todas as requisições externas para a API do `Football-Data.org` executadas pelas Cloud Functions devem passar pelo utilitário `fetchWithRetry` com limite de tentativas, backoff exponencial e cabeçalho `Connection: close` para evitar erros de socket undici e timeout no GCP.
 
 ---
 
-## 5. Instruções de Execução Local e Deploy
+## 6. Instruções de Execução Local e Deploy
 
 ### Execução Local:
-1. Navegue até a pasta do projeto:
-   ```bash
-   cd /home/jocimar/Lab/copa2026-bolao
-   ```
+1. Navegue até a pasta raiz do projeto.
 2. Instale as dependências:
    ```bash
    yarn install
@@ -66,9 +73,9 @@ yarn deploy
 ### Deploy para o Firebase (Regras e Cloud Functions):
 Para implantar as regras de segurança do Firestore e as Cloud Functions no Firebase:
 
-1. Navegue até o diretório `firebase/` na raiz do projeto:
+1. Navegue até o diretório `/firebase` na raiz do projeto:
    ```bash
-   cd /home/jocimar/Lab/copa2026-bolao/firebase
+   cd firebase
    ```
 2. Certifique-se de estar autenticado na sua conta do Firebase:
    ```bash
@@ -90,3 +97,28 @@ Para implantar as regras de segurança do Firestore e as Cloud Functions no Fire
    *Ou implante componentes específicos separadamente:*
    - Apenas regras do Firestore: `npx firebase deploy --only firestore:rules`
    - Apenas Cloud Functions: `npx firebase deploy --only functions`
+
+---
+
+## 7. Script Administrativo de Reset (Firestore)
+O script `scripts/reset-db.js` é utilizado para resetar resultados de partidas, dados de mata-mata, acumulados de Business Units e palpites individuais, preparando o banco para uma nova fase ou campeonato.
+
+### Execução Local com Emulador:
+Defina a variável `FIRESTORE_EMULATOR_HOST` antes de rodar o script:
+```bash
+export FIRESTORE_EMULATOR_HOST=localhost:8080
+# Para zerar palpites e pontuações, mas MANTER os usuários cadastrados:
+node scripts/reset-db.js
+# Para deletar os usuários COMPLETAMENTE junto com os palpites:
+node scripts/reset-db.js --delete-users
+```
+
+### Execução em Produção:
+Requer o caminho da chave JSON do Service Account:
+```bash
+# Mantendo cadastro de usuários:
+node scripts/reset-db.js ./caminho-da-chave.json
+# Deletando usuários completamente:
+node scripts/reset-db.js ./caminho-da-chave.json --delete-users
+```
+

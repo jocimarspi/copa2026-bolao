@@ -5,7 +5,7 @@ O projeto utiliza um conjunto de tecnologias modernas focadas em performance, ti
 ## Tecnologias Principais
 - **Framework Frontend**: React 19
 - **Linguagem**: TypeScript 6
-- **Estilização**: CSS3 Vanilla (sem frameworks utilitários como Tailwind, usando variáveis CSS e design system customizado dark premium)
+- **Estilização**: CSS3 Vanilla (sem frameworks utilitários como Tailwind, com suporte a tema escuro/dark premium de fallback e tema claro/soft warm-paper com alternador manual)
 - **Bundler/Build Tool**: Vite
 
 ## Infraestrutura & Backend
@@ -24,3 +24,5 @@ O projeto utiliza um conjunto de tecnologias modernas focadas em performance, ti
 ## Ferramentas de Desenvolvimento
 - **Gerenciador de Pacotes**: Yarn v3.8.7
 - **Linter**: ESLint (configuração customizada de regras de qualidade)
+- **Scripts de Manutenção**: Script de reset e administração de banco de dados (`scripts/reset-db.js`) usando `firebase-admin`.
+
