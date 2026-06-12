@@ -51,6 +51,53 @@ function normalizeTeamName(name) {
 }
 
 /**
+ * Executa uma requisição fetch com suporte a tentativas (retry) e cabeçalhos.
+ * @param {string} url URL do recurso.
+ * @param {object} options Opções do fetch.
+ * @param {number} retries Número máximo de tentativas.
+ * @param {number} delay Atraso inicial em milissegundos.
+ * @return {Promise<Response>} Retorna a resposta do fetch.
+ */
+async function fetchWithRetry(url, options = {}, retries = 3, delay = 1000) {
+  const headers = {
+    "Connection": "close",
+    "User-Agent": "Copa2026Bolao/1.0 (GCP Cloud Function)",
+    ...options.headers,
+  };
+
+  const fetchOptions = {
+    ...options,
+    headers,
+  };
+
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, fetchOptions);
+      if (response.status === 429 && i < retries - 1) {
+        console.warn(`Tentativa ${i + 1} falhou com status 429. ` +
+            `Aguardando ${delay}ms para tentar novamente...`);
+        await new Promise((resolve) => {
+          setTimeout(resolve, delay);
+        });
+        delay *= 2;
+        continue;
+      }
+      return response;
+    } catch (err) {
+      if (i === retries - 1) {
+        throw err;
+      }
+      console.warn(`Tentativa ${i + 1} falhou com erro: ` +
+          `${err.message || err}. Tentando novamente em ${delay}ms...`);
+      await new Promise((resolve) => {
+        setTimeout(resolve, delay);
+      });
+      delay *= 2;
+    }
+  }
+}
+
+/**
  * Recalcula a pontuação dos usuários com base nos palpites e resultados.
  * @param {object} dbInstance Instância do Firestore.
  */
@@ -170,7 +217,7 @@ exports.atualizarResultadosBolao = onSchedule("*/15 * * * *", async (event) => {
   try {
     const url = `https://api.football-data.org/v4/competitions/` +
         `${COMPETITION_CODE}/matches`;
-    const response = await fetch(url, {
+    const response = await fetchWithRetry(url, {
       method: "GET",
       headers: {
         "X-Auth-Token": apiKey,
@@ -295,7 +342,7 @@ exports.popularMatchesManual = onRequest({cors: true}, async (req, res) => {
   try {
     const url = `https://api.football-data.org/v4/competitions/` +
         `${competitionCode}/matches`;
-    const response = await fetch(url, {
+    const response = await fetchWithRetry(url, {
       method: "GET",
       headers: {
         "X-Auth-Token": apiKey,
