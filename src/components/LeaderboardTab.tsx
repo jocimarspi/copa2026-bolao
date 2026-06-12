@@ -22,6 +22,8 @@ export default function LeaderboardTab() {
   const [unitsLimit, setUnitsLimit] = useState(20);
 
   const [selectedUser, setSelectedUser] = useState<UserRankInfo | null>(null);
+  const [selectedUnitRankingId, setSelectedUnitRankingId] = useState<string | null>(null);
+  const [visibleUnitRankingLimit, setVisibleUnitRankingLimit] = useState(20);
 
   // 1. General Classification (Top 10 users)
   const allRankedUsers = getUsersWithRanks(sortUsers(users));
@@ -110,30 +112,62 @@ export default function LeaderboardTab() {
       );
     }
 
-    return members.map((m, j) => {
-      const isMe = authUser && m.uid === authUser.uid;
-      const rankIdx = m.displayRank !== undefined ? m.displayRank - 1 : j;
-      return (
-        <div
-          className={`leaderboard__row leaderboard__row--member ${isMe ? "leaderboard__row--me" : ""}`}
-          key={m.uid}
-          onClick={() => setSelectedUser(m)}
-        >
-          <div className={`leaderboard__rank ${RC(rankIdx)}`}>{RI(rankIdx)}</div>
-          <div className="leaderboard__avatar" style={{ fontSize: "1rem" }}>{m.emoji || "⚽"}</div>
-          <div className="leaderboard__info">
-            <div className="leaderboard__name" title={m.name} style={{ fontSize: ".82rem" }}>
-              {fmtName(m.name)}
-              {isMe && <span style={{ color: "var(--gold)", fontSize: ".65rem" }}> ({t("user_you").toLowerCase()})</span>}
+    const bu = activeUnits.find(x => x.id === unitKey);
+    const hasMoreThan5 = bu ? bu.count > 5 : false;
+
+    return (
+      <>
+        {members.map((m, j) => {
+          const isMe = authUser && m.uid === authUser.uid;
+          const rankIdx = m.displayRank !== undefined ? m.displayRank - 1 : j;
+          return (
+            <div
+              className={`leaderboard__row leaderboard__row--member ${isMe ? "leaderboard__row--me" : ""}`}
+              key={m.uid}
+              onClick={() => setSelectedUser(m)}
+            >
+              <div className={`leaderboard__rank ${RC(rankIdx)}`}>{RI(rankIdx)}</div>
+              <div className="leaderboard__avatar" style={{ fontSize: "1rem" }}>{m.emoji || "⚽"}</div>
+              <div className="leaderboard__info">
+                <div className="leaderboard__name" title={m.name} style={{ fontSize: ".82rem" }}>
+                  {fmtName(m.name)}
+                  {isMe && <span style={{ color: "var(--gold)", fontSize: ".65rem" }}> ({t("user_you").toLowerCase()})</span>}
+                </div>
+              </div>
+              <div className="leaderboard__points-col">
+                <div className="leaderboard__points" style={{ fontSize: "1rem" }}>{m.pts || 0}</div>
+                <div className="leaderboard__points-label">{t("pts_label")}</div>
+              </div>
             </div>
-          </div>
-          <div className="leaderboard__points-col">
-            <div className="leaderboard__points" style={{ fontSize: "1rem" }}>{m.pts || 0}</div>
-            <div className="leaderboard__points-label">{t("pts_label")}</div>
-          </div>
-        </div>
-      );
-    });
+          );
+        })}
+
+        {hasMoreThan5 && (
+          <button
+            className="leaderboard__row leaderboard__row--member"
+            style={{
+              width: "100%",
+              justifyContent: "center",
+              cursor: "pointer",
+              background: "rgba(255, 255, 255, 0.02)",
+              borderStyle: "dashed",
+              fontWeight: 700,
+              fontSize: "0.82rem",
+              color: "var(--gold)",
+              marginTop: "4px",
+              padding: "10px 15px"
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedUnitRankingId(unitKey);
+              setVisibleUnitRankingLimit(20);
+            }}
+          >
+            {t("btn_view_full_ranking")} ➔
+          </button>
+        )}
+      </>
+    );
   };
 
   const renderStatsModal = () => {
@@ -229,6 +263,76 @@ export default function LeaderboardTab() {
       </div>
     );
   };
+
+  if (selectedUnitRankingId) {
+    const bu = businessUnits[selectedUnitRankingId];
+    const unitUsers = users.filter(u => u.unit === selectedUnitRankingId);
+    const allRankedUnitUsers = getUsersWithRanks(sortUsers(unitUsers));
+    const paginatedUnitUsers = allRankedUnitUsers.slice(0, visibleUnitRankingLimit);
+    const hasMoreUnitRanking = allRankedUnitUsers.length > visibleUnitRankingLimit;
+
+    return (
+      <div className="tab tab--active">
+        {/* Back button */}
+        <div style={{ marginBottom: "16px" }}>
+          <button
+            className="btn btn--outline btn--sm"
+            onClick={() => {
+              setSelectedUnitRankingId(null);
+              setVisibleUnitRankingLimit(20);
+            }}
+            style={{ display: "flex", alignItems: "center", gap: "6px" }}
+          >
+            {t("btn_back_to_summary")}
+          </button>
+        </div>
+
+        <div className="section-title">
+          {bu ? `${t("full_ranking_title")} — ${bu.label}` : t("full_ranking_title")}
+        </div>
+
+        <div className="leaderboard">
+          {paginatedUnitUsers.map((u, i) => {
+            const isMe = authUser && u.uid === authUser.uid;
+            const rankIdx = u.displayRank !== undefined ? u.displayRank - 1 : i;
+            return (
+              <div
+                className={`leaderboard__row ${isMe ? "leaderboard__row--me" : ""}`}
+                key={u.uid}
+                onClick={() => setSelectedUser(u)}
+              >
+                <div className={`leaderboard__rank ${RC(rankIdx)}`}>{RI(rankIdx)}</div>
+                <div className="leaderboard__avatar">{u.emoji || "⚽"}</div>
+                <div className="leaderboard__info">
+                  <div className="leaderboard__name" title={u.name}>
+                    {fmtName(u.name)}
+                    {isMe && <span style={{ color: "var(--gold)", fontSize: ".68rem" }}> ({t("user_you").toLowerCase()})</span>}
+                  </div>
+                </div>
+                <div className="leaderboard__points-col">
+                  <div className="leaderboard__points">{u.pts || 0}</div>
+                  <div className="leaderboard__points-label">{t("pts_label")}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {hasMoreUnitRanking && (
+          <div style={{ textAlign: "center", marginTop: "20px" }}>
+            <button
+              className="btn btn--outline"
+              onClick={() => setVisibleUnitRankingLimit(prev => prev + 20)}
+              style={{ width: "100%", maxWidth: "300px", padding: "10px 0" }}
+            >
+              {t("btn_load_more")}
+            </button>
+          </div>
+        )}
+        {renderStatsModal()}
+      </div>
+    );
+  }
 
   if (showFullRanking) {
     const paginatedFullRankingUsers = allRankedUsers.slice(0, visibleRankingLimit);
