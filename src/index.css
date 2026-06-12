@@ -2680,3 +2680,41 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   transform: translateY(-1px);
   background-color: var(--hover-bg);
 }
+
+/* ══════════════ CUSTOM EMOJI PICKER ══════════════ */
+.avatar-picker-btn {
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.avatar-picker-btn:hover:not(:disabled) {
+  transform: scale(1.06);
+  border-color: #fff !important;
+}
+.avatar-picker-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.emoji-item {
+  transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.15s ease;
+}
+.emoji-item:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  transform: scale(1.25);
+}
+.emoji-item:active {
+  transform: scale(0.9);
+}
+
+.emoji-grid-picker div::-webkit-scrollbar {
+  width: 5px;
+}
+.emoji-grid-picker div::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.01);
+  border-radius: 4px;
+}
+.emoji-grid-picker div::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+.emoji-grid-picker div::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}

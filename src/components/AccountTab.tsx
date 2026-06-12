@@ -8,9 +8,53 @@ interface AccountTabProps {
   setCurrentTab: (tab: string) => void;
 }
 
-const EMOJI_OPTIONS = [
-  "⚽", "🏆", "🎯", "🔥", "💪", "🦁", "🦅", "🐉", 
-  "⚡", "🌟", "🐺", "🦊", "🇧🇷", "🇦🇷", "🏴\u200D󠁢󠁥󠁮󠁧󠁿", "🇫🇷"
+const EMOJI_CATEGORIES = [
+  {
+    key: "emoji_cat_sports",
+    emojis: ["⚽", "🏆", "🥇", "🥈", "🥉", "👑", "🎯", "🔥", "💪", "⚡", "🌟"]
+  },
+  {
+    key: "emoji_cat_cats",
+    emojis: ["🐱", "🐈", "🐈‍⬛", "😻", "😸", "🦁", "🐯", "🐆"]
+  },
+  {
+    key: "emoji_cat_animals",
+    emojis: [
+      "🐶", "🐕", "🦮", "🐕‍🦺", "🐩", "🐺", "🦊", "🦝", "🐴", "🫏", "🐎", "🦄", "🦓", "🦌", "🦬", "🐮", "🐂", "🐃", "🐄", "🐷", "🐖", "🐗", "🐽", "🐏", "🐑", "🐐", "🐪", "🐫", "🦙", "🦒", "🐘", "🦣", "🦏", "🦛", "🐭", "🐁", "🐀", "🐹", "🐰", "🐇", "🐿️", "🦫", "🦔", "🦇", "🐻", "🐻‍❄️", "🐨", "🐼", "🦥", "🦦", "🦨", "🦘", "🦡", "🐵", "🐒", "🦍", "🦧",
+      "🦅", "🦆", "🦢", "🦉", "🦤", "🦩", "🦚", "🦜", "🕊️", "🐓", "🐔", "🐣", "🐤", "🐥", "🐧", "🪿", "🦃",
+      "🐸", "🐊", "🐢", "🦎", "🐍", "🦖", "🦕",
+      "🐳", "🐋", "🐬", "🦭", "🐟", "🐠", "🐡", "🦈", "🐙", "🐚", "🪼", "🦀", "🦞", "🦐", "🦑",
+      "🐌", "🦋", "🐛", "🐜", "🐝", "🪲", "🐞", "🦗", "🕷️", "🕸️", "🦂", "🦟", "🪰", "🪱", "🪳"
+    ]
+  },
+  {
+    key: "emoji_cat_flags",
+    emojis: [
+      "🏁", "🚩", "🎌", "🏴", "🏳️", "🏳️‍🌈", "🏳️‍⚧️", "🏴‍☠️",
+      "🇦🇨", "🇦🇩", "🇦🇪", "🇦🇫", "🇦🇬", "🇦🇮", "🇦🇱", "🇦🇲", "🇦🇴", "🇦🇶", "🇦🇷", "🇦🇸", "🇦🇹", "🇦🇺", "🇦🇼", "🇦🇽", "🇦🇿",
+      "🇧🇦", "🇧🇧", "🇧🇩", "🇧🇪", "🇧🇫", "🇧🇬", "🇧🇭", "🇧🇮", "🇧🇯", "🇧🇱", "🇧🇲", "🇧🇳", "🇧🇴", "🇧🇶", "🇧🇷", "🇧🇸", "🇧🇹", "🇧🇻", "🇧🇼", "🇧🇾", "🇧🇿",
+      "🇨🇦", "🇨🇨", "🇨🇩", "🇨🇫", "🇨🇬", "🇨🇭", "🇨🇮", "🇨🇰", "🇨🇱", "🇨🇲", "🇨🇳", "🇨🇴", "🇨🇵", "🇨🇷", "🇨🇺", "🇨🇻", "🇨🇼", "🇨🇽", "🇨🇾", "🇨🇿",
+      "🇩🇪", "🇩🇬", "🇩🇯", "🇩🇰", "🇩🇲", "🇩🇴", "🇩🇿",
+      "🇪🇦", "🇪🇨", "🇪🇪", "🇪🇬", "🇪🇭", "🇪🇷", "🇪🇸", "🇪🇹", "🇪🇺",
+      "🇫🇮", "🇫🇯", "🇫🇰", "🇫🇲", "🇫🇴", "🇫🇷",
+      "🇬🇦", "🇬🇧", "🇬🇩", "🇬🇪", "🇬🇫", "🇬🇬", "🇬🇭", "🇬🇮", "🇬🇱", "🇬🇲", "🇬🇳", "🇬🇵", "🇬🇶", "🇬🇷", "🇬🇸", "🇬🇹", "🇬🇺", "🇬🇼", "🇬🇾",
+      "🇭🇰", "🇭🇲", "🇭🇳", "🇭🇷", "🇭🇹", "🇭🇺",
+      "🇮🇨", "🇮🇩", "🇮🇪", "🇮🇱", "🇮🇲", "🇮🇳", "🇮🇴", "🇮🇶", "🇮🇷", "🇮🇸", "🇮🇹",
+      "🇯🇪", "🇯🇲", "🇯🇴", "🇯🇵",
+      "🇰🇪", "🇰🇬", "🇰🇭", "🇰🇮", "🇰🇲", "🇰🇳", "🇰🇵", "🇰🇷", "🇰🇼", "🇰🇾", "🇰🇿",
+      "🇱🇦", "🇱🇧", "🇱🇨", "🇱🇮", "🇱🇰", "🇱🇷", "🇱🇸", "🇱🇹", "🇱🇺", "🇱🇻", "🇱🇾",
+      "🇲🇦", "🇲🇨", "🇲🇩", "🇲🇪", "🇲🇫", "🇲🇬", "🇲🇭", "🇲🇰", "🇲🇱", "🇲🇲", "🇲🇳", "🇲🇴", "🇲🇵", "🇲🇶", "🇲🇷", "🇲🇸", "🇲🇹", "🇲🇺", "🇲🇻", "🇲🇼", "🇲🇽", "🇲🇾", "🇲🇿",
+      "🇳🇦", "🇳🇨", "🇳🇪", "🇳🇫", "🇳🇬", "🇳🇮", "🇳🇱", "🇳🇴", "🇳🇵", "🇳🇷", "🇳🇺", "🇳🇿",
+      "🇴🇲",
+      "🇵🇦", "🇵🇪", "🇵🇫", "🇵🇬", "🇵🇭", "🇵🇰", "🇵🇱", "🇵🇲", "🇵🇳", "🇵🇷", "🇵🇸", "🇵🇹", "🇵🇼", "🇵🇾",
+      "🇶🇦",
+      "🇷🇪", "🇷🇴", "🇷🇸", "🇷🇺", "🇷🇼",
+      "🇸🇦", "🇸🇧", "🇸🇨", "🇸🇩", "🇸🇪", "🇸🇬", "🇸🇭", "🇸🇮", "🇸🇯", "🇸🇰", "🇸🇱", "🇸🇲", "🇸🇳", "🇸🇴", "🇸🇷", "🇸🇸", "🇸🇹", "🇸🇻", "🇸🇽", "🇸🇾", "🇸🇿",
+      "🇹🇦", "🇹🇨", "🇹🇩", "🇹🇫", "🇹🇬", "🇹🇭", "🇹🇯", "🇹🇰", "🇹🇱", "🇹🇲", "🇹🇳", "🇹🇴", "🇹🇷", "🇹🇹", "🇹🇻", "🇹🇼", "🇹🇿",
+      "🇺🇦", "🇺🇬", "🇺🇲", "🇺🇳", "🇺🇸", "🇺🇾", "🇺🇿", "🇻🇦", "🇻🇨", "🇻🇪", "🇻🇬", "🇻🇮", "🇻🇳", "🇻🇺", "🇼🇫", "🇼🇸", "🇽🇰", "🇾🇪", "🇾🇹", "🇿🇦", "🇿🇲", "🇿🇼",
+      "🏴\u200d󠁢󠁥󠁮󠁧󠁿", "🏴\u200d󠁢󠁳󠁣󠁴󠁿", "🏴\u200d󠁢󠁷󠁬󠁳󠁿"
+    ]
+  }
 ];
 
 export default function AccountTab({ setCurrentTab }: AccountTabProps) {
@@ -33,6 +77,8 @@ export default function AccountTab({ setCurrentTab }: AccountTabProps) {
   const [emoji, setEmoji] = useState<string>("⚽");
   const [saving, setSaving] = useState<boolean>(false);
   const [localError, setLocalError] = useState<string>("");
+  const [showPicker, setShowPicker] = useState<boolean>(false);
+  const [activeCategory, setActiveCategory] = useState<string>("emoji_cat_sports");
 
   // Sync profile values when editing starts or profile changes
   useEffect(() => {
@@ -45,6 +91,7 @@ export default function AccountTab({ setCurrentTab }: AccountTabProps) {
       setUnit("");
       setEmoji("⚽");
     }
+    setShowPicker(false);
   }, [userProfile, user, isEditing]);
 
   const handleLogin = async () => {
@@ -140,6 +187,135 @@ export default function AccountTab({ setCurrentTab }: AccountTabProps) {
               </div>
             )}
 
+            {/* Centered Avatar Picker */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "20px" }}>
+              <label style={{ marginBottom: "8px" }}>{t("profile_avatar")}</label>
+              <button
+                type="button"
+                onClick={() => setShowPicker(!showPicker)}
+                disabled={saving}
+                style={{
+                  width: "72px",
+                  height: "72px",
+                  borderRadius: "50%",
+                  fontSize: "2.5rem",
+                  background: "var(--card2)",
+                  border: "2px dashed var(--gold)",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                  outline: "none"
+                }}
+                title="Alterar Avatar"
+                className="avatar-picker-btn"
+              >
+                {emoji}
+                <div style={{
+                  position: "absolute",
+                  bottom: "-2px",
+                  right: "-2px",
+                  background: "var(--gold)",
+                  color: "#000",
+                  width: "22px",
+                  height: "22px",
+                  borderRadius: "50%",
+                  fontSize: "0.75rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.3)"
+                }}>
+                  ✏️
+                </div>
+              </button>
+            </div>
+
+            {/* Expandable Grid Emoji Picker */}
+            {showPicker && (
+              <div 
+                className="emoji-grid-picker" 
+                style={{
+                  border: "1px solid var(--border)",
+                  borderRadius: "8px",
+                  background: "var(--card2, rgba(255, 255, 255, 0.02))",
+                  padding: "12px",
+                  marginBottom: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px"
+                }}
+              >
+                {/* Tabs */}
+                <div style={{ display: "flex", gap: "6px", borderBottom: "1px solid var(--border)", paddingBottom: "8px" }}>
+                  {EMOJI_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat.key}
+                      type="button"
+                      onClick={() => setActiveCategory(cat.key)}
+                      style={{
+                        flex: 1,
+                        padding: "6px 0",
+                        borderRadius: "4px",
+                        border: "none",
+                        background: activeCategory === cat.key ? "var(--gold)" : "rgba(255, 255, 255, 0.05)",
+                        color: activeCategory === cat.key ? "#000" : "#fff",
+                        fontSize: "1.1rem",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "all 0.2s"
+                      }}
+                      title={t(cat.key)}
+                    >
+                      {cat.key === "emoji_cat_sports" && "🏆"}
+                      {cat.key === "emoji_cat_cats" && "🐱"}
+                      {cat.key === "emoji_cat_animals" && "🦁"}
+                      {cat.key === "emoji_cat_flags" && "🏳️"}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Grid */}
+                <div 
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(8, 1fr)",
+                    gap: "8px",
+                    maxHeight: "180px",
+                    overflowY: "auto",
+                    paddingRight: "4px"
+                  }}
+                >
+                  {EMOJI_CATEGORIES.find(c => c.key === activeCategory)?.emojis.map((em) => (
+                    <button
+                      key={em}
+                      type="button"
+                      onClick={() => {
+                        setEmoji(em);
+                      }}
+                      style={{
+                        fontSize: "1.5rem",
+                        background: emoji === em ? "var(--gold)" : "transparent",
+                        border: "none",
+                        borderRadius: "6px",
+                        padding: "4px 0",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center"
+                      }}
+                      className="emoji-item"
+                    >
+                      {em}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="form-group">
               <label>{t("profile_display_name")}</label>
               <input 
@@ -152,37 +328,20 @@ export default function AccountTab({ setCurrentTab }: AccountTabProps) {
               />
             </div>
 
-            <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
-              <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
-                <label>{t("profile_unit")}</label>
-                <select 
-                  value={unit} 
-                  onChange={(e) => setUnit(e.target.value)}
-                  disabled={saving}
-                >
-                  <option value="">{t("profile_select_unit")}</option>
-                  {sortedUnits.map((bu) => (
-                    <option key={bu.id} value={bu.id}>
-                      {bu.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group" style={{ width: "125px", marginBottom: 0 }}>
-                <label>{t("profile_avatar")}</label>
-                <select 
-                  value={emoji} 
-                  onChange={(e) => setEmoji(e.target.value)}
-                  disabled={saving}
-                >
-                  {EMOJI_OPTIONS.map((em) => (
-                    <option key={em} value={em}>
-                      {em}
-                    </option>
-                  ))}
-                </select>
-              </div>
+            <div className="form-group" style={{ marginBottom: "20px" }}>
+              <label>{t("profile_unit")}</label>
+              <select 
+                value={unit} 
+                onChange={(e) => setUnit(e.target.value)}
+                disabled={saving}
+              >
+                <option value="">{t("profile_select_unit")}</option>
+                {sortedUnits.map((bu) => (
+                  <option key={bu.id} value={bu.id}>
+                    {bu.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <button 
