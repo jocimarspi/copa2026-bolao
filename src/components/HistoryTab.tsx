@@ -161,8 +161,19 @@ export default function HistoryTab() {
                   const r = results[m.id];
                   const homeFlag = getFlagUrl(m.h);
                   const awayFlag = getFlagUrl(m.a);
-                  const groupLabel = m.g ? `${t("group_short")}${m.g}` : "";
-                  const roundLabel = m.rod === "R1" ? t("pred_r1") : m.rod === "R2" ? t("pred_r2") : m.rod === "R3" ? t("pred_r3") : m.rod;
+                  const isKnockout = ["R32", "R16", "QF", "SF", "3RD", "F"].includes(m.rod);
+                  const groupLabel = m.g ? `${t("group_short")}${m.g}` : (isKnockout ? t("filter_knockout") : "");
+                  const roundLabel = 
+                    m.rod === "R1" ? t("pred_r1") : 
+                    m.rod === "R2" ? t("pred_r2") : 
+                    m.rod === "R3" ? t("pred_r3") : 
+                    m.rod === "R32" ? t("pred_r32") :
+                    m.rod === "R16" ? t("pred_r16") :
+                    m.rod === "QF" ? t("pred_qf") :
+                    m.rod === "SF" ? t("pred_sf") :
+                    m.rod === "3RD" ? t("pred_3rd") :
+                    m.rod === "F" ? t("pred_f") :
+                    m.rod;
                   const phaseInfo = groupLabel && roundLabel ? `${groupLabel} · ${roundLabel}` : (groupLabel || roundLabel || "");
 
                   return (

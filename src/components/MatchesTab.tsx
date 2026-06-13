@@ -238,7 +238,9 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
     filteredMatches = filteredMatches.filter(m => m.test);
   } else {
     filteredMatches = filteredMatches.filter(m => !m.test);
-    if (currentFilter !== "todos") {
+    if (currentFilter === "matamata") {
+      filteredMatches = filteredMatches.filter(m => ["R32", "R16", "QF", "SF", "3RD", "F"].includes(m.rod));
+    } else if (currentFilter !== "todos") {
       filteredMatches = filteredMatches.filter(m => m.rod === currentFilter);
     }
   }
@@ -318,6 +320,12 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
             onClick={() => setCurrentFilter("R3")}
           >
             {t("pred_r3")}
+          </button>
+          <button
+            className={`filter-btn ${currentFilter === "matamata" ? "is-active" : ""}`}
+            onClick={() => setCurrentFilter("matamata")}
+          >
+            ⚔️ {t("filter_knockout")}
           </button>
           <button
             className={`filter-btn ${currentFilter === "teste" ? "is-active" : ""}`}
@@ -552,8 +560,20 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
               }
             }
 
-            const groupLabel = m.test ? "TESTE" : `Grupo ${m.g}`;
-            const roundLabel = m.test ? m.round : (m.rod === "R1" ? t("pred_r1") : m.rod === "R2" ? t("pred_r2") : t("pred_r3"));
+            const isKnockout = ["R32", "R16", "QF", "SF", "3RD", "F"].includes(m.rod);
+            const groupLabel = m.test ? "TESTE" : (isKnockout ? t("filter_knockout") : `Grupo ${m.g}`);
+            const roundLabel = m.test ? m.round : (
+              m.rod === "R1" ? t("pred_r1") :
+              m.rod === "R2" ? t("pred_r2") :
+              m.rod === "R3" ? t("pred_r3") :
+              m.rod === "R32" ? t("pred_r32") :
+              m.rod === "R16" ? t("pred_r16") :
+              m.rod === "QF" ? t("pred_qf") :
+              m.rod === "SF" ? t("pred_sf") :
+              m.rod === "3RD" ? t("pred_3rd") :
+              m.rod === "F" ? t("pred_f") :
+              m.rod
+            );
 
             return (
               <div className="match-card--unified" key={m.id}>

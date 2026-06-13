@@ -31,12 +31,7 @@ const BOOTSTRAP_ADMINS = [
   "jocimar.huss@db1.com.br"
 ];
 
-const MM_FASES = [
-  { key: "oitavas", label: "Oitavas de Final", n: 8 },
-  { key: "quartas", label: "Quartas de Final", n: 4 },
-  { key: "semis", label: "Semifinais", n: 2 },
-  { key: "final", label: "Final", n: 1 }
-];
+
 
 export default function AdminTab() {
   const { t } = useTranslation();
@@ -80,9 +75,7 @@ export default function AdminTab() {
   const [bufNome, setBufNome] = useState<string>("");
   const [bufEcossistema, setBufEcossistema] = useState<string>("DIGITAL TRANSFORMATION");
 
-  // Mata-mata local state
-  const [mmData, setMmData] = useState<Record<string, any>>({});
-  const [mmLoading, setMmLoading] = useState<boolean>(false);
+
 
   // Load API config and Mata-mata on mount
   useEffect(() => {
@@ -97,19 +90,7 @@ export default function AdminTab() {
       }
     }
 
-    async function loadMataMata() {
-      try {
-        const snap = await getDoc(doc(db, "torneio", "matamata"));
-        if (snap.exists()) {
-          setMmData(snap.data());
-        }
-      } catch (err) {
-        console.error("Erro ao carregar mata-mata:", err);
-      }
-    }
-
     loadConfig();
-    loadMataMata();
   }, []);
 
   // Sync result inputs when results or matches update
@@ -512,34 +493,7 @@ export default function AdminTab() {
     });
   };
 
-  // --- Mata-mata handlers ---
-  const handleMmValueChange = (phase: string, idx: number, field: string, val: string) => {
-    setMmData(prev => {
-      const copy = { ...prev };
-      if (!copy[phase]) {
-        copy[phase] = Array(8).fill({ h: "", a: "", gh: null, ga: null });
-      }
-      const games = [...copy[phase]];
-      games[idx] = {
-        ...games[idx],
-        [field]: val === "" ? null : (field.startsWith("g") ? parseInt(val) : val)
-      };
-      copy[phase] = games;
-      return copy;
-    });
-  };
 
-  const handleSaveMataMata = async () => {
-    setMmLoading(true);
-    try {
-      await setDoc(doc(db, "torneio", "matamata"), mmData);
-      showModal(t("adm_mm_saved") || "Mata-mata salvo com sucesso!");
-    } catch (err: any) {
-      showModal("Erro ao salvar mata-mata: " + err.message);
-    } finally {
-      setMmLoading(false);
-    }
-  };
 
   // Compute stats
   const totalUsers = users.length;
@@ -591,9 +545,6 @@ export default function AdminTab() {
         </button>
         <button className={`faq-categories__btn ${adminSubTab === "bus" ? "is-active" : ""}`} onClick={() => setAdminSubTab("bus")}>
           🏢 {t("adm_sub_bus") || "Unidades"}
-        </button>
-        <button className={`faq-categories__btn ${adminSubTab === "matamata" ? "is-active" : ""}`} onClick={() => setAdminSubTab("matamata")}>
-          🏆 {t("adm_sub_knockout") || "Mata-Mata"}
         </button>
         <button className={`faq-categories__btn ${adminSubTab === "admins" ? "is-active" : ""}`} onClick={() => setAdminSubTab("admins")}>
           👥 {t("adm_sub_admins") || "Admins"}
@@ -772,68 +723,7 @@ export default function AdminTab() {
         </div>
       )}
 
-      {/* --- MATA-MATA SUB-TAB --- */}
-      {adminSubTab === "matamata" && (
-        <div className="card">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <h3 style={{ fontFamily: "Unbounded, sans-serif", fontSize: ".8rem" }}>Placa do Mata-Mata</h3>
-            <button className="btn btn--sm" onClick={handleSaveMataMata} disabled={mmLoading}>
-              {mmLoading ? "Salvando..." : "Salvar Configuração"}
-            </button>
-          </div>
 
-          {MM_FASES.map((f) => {
-            const jogos = mmData[f.key] || Array(f.n).fill({ h: "", a: "", gh: null, ga: null });
-
-            return (
-              <div key={f.key} style={{ marginBottom: "16px", borderBottom: "1px solid var(--border)", paddingBottom: "12px" }}>
-                <div style={{ fontFamily: "Unbounded,sans-serif", fontSize: ".68rem", fontWeight: 900, color: "var(--gold)", marginBottom: "7px" }}>
-                  {f.label}
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  {Array(f.n).fill(null).map((_, idx) => {
-                    const j = jogos[idx] || { h: "", a: "", gh: null, ga: null };
-
-                    return (
-                      <div key={idx} style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
-                        <input 
-                          className="score-input" 
-                          style={{ width: "130px", padding: "4px 8px" }} 
-                          placeholder="Time Casa"
-                          value={j.h || ""}
-                          onChange={(e) => handleMmValueChange(f.key, idx, "h", e.target.value)}
-                        />
-                        <input 
-                          className="score-input" 
-                          type="number"
-                          style={{ width: "42px", textAlign: "center" }} 
-                          value={j.gh !== null && j.gh !== undefined ? j.gh : ""}
-                          onChange={(e) => handleMmValueChange(f.key, idx, "gh", e.target.value)}
-                        />
-                        <span style={{ color: "var(--muted)" }}>×</span>
-                        <input 
-                          className="score-input" 
-                          type="number"
-                          style={{ width: "42px", textAlign: "center" }} 
-                          value={j.ga !== null && j.ga !== undefined ? j.ga : ""}
-                          onChange={(e) => handleMmValueChange(f.key, idx, "ga", e.target.value)}
-                        />
-                        <input 
-                          className="score-input" 
-                          style={{ width: "130px", padding: "4px 8px" }} 
-                          placeholder="Time Fora"
-                          value={j.a || ""}
-                          onChange={(e) => handleMmValueChange(f.key, idx, "a", e.target.value)}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
 
       {/* --- MATCHES SUB-TAB --- */}
       {adminSubTab === "matches" && (
