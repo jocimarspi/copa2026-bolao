@@ -271,8 +271,10 @@ exports.atualizarResultadosBolao = onSchedule("*/15 * * * *", async (event) => {
           shouldUpdate = true;
         } else {
           const rData = resSnap.data();
-          if (rData.home !== golsHome || rData.away !== golsAway ||
-              rData.live !== false) {
+          const temResultado = rData &&
+            rData.home !== null && rData.home !== undefined &&
+            rData.away !== null && rData.away !== undefined;
+          if (!temResultado) {
             shouldUpdate = true;
           }
         }
