@@ -252,12 +252,7 @@ exports.atualizarResultadosBolao = onSchedule("*/15 * * * *", async (event) => {
     let updatesCount = 0;
 
     for (const match of finishedMatches) {
-      const homeNorm = normalizeTeamName(match.homeTeam.name);
-      const awayNorm = normalizeTeamName(match.awayTeam.name);
-
-      const m = dbMatches.find((x) =>
-        x.h === homeNorm || x.a === awayNorm,
-      );
+      const m = dbMatches.find((x) => x.id === match.id);
 
       if (m) {
         const resultRef = db.collection("results").doc(String(m.id));
