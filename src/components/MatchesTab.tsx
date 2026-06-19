@@ -9,7 +9,6 @@ import {
   isOpen,
   lockLbl,
   pSt,
-  pts,
   getUserPredictionStats,
   fmtDT,
   TN,
@@ -264,9 +263,6 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
 
   filteredMatches.sort((a, b) => parseKoDate(a.ko).getTime() - parseKoDate(b.ko).getTime());
 
-  // Calculate overall user points
-  const userTotalPoints = user ? pts(predictions, results, matches) : 0;
-
   return (
     <div className="tab tab--active">
       {/* Prediction Window Info Banner */}
@@ -275,13 +271,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
       </div>
 
       {/* Points summary banner */}
-      {user ? (
-        <div className="alert alert--info alert--full-width" style={{ marginBottom: "16px", textAlign: "center" }}>
-          {t("pred_your_pts")}{" "}
-          <strong style={{ color: "var(--gold)", fontSize: "1rem" }}>{userTotalPoints} pts</strong>{" "}
-          {t("pred_your_pts_end")}
-        </div>
-      ) : (
+      {!user && (
         <div className="alert alert--info alert--full-width" style={{ marginBottom: "16px", textAlign: "center" }}>
           {t("pred_not_logged")}{" "}
           <span
