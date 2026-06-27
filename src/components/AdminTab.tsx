@@ -750,7 +750,7 @@ export default function AdminTab() {
 
           {/* Match form card */}
           {(isAddingMatch || editingMatch) && (
-            <div className="card" style={{ marginBottom: "16px", border: "1px solid var(--border)" }}>
+            <div className="card admin-sticky-form" style={{ marginBottom: "16px", border: "1px solid var(--border)" }}>
               <h3 id="match-form-title" style={{ fontFamily: "Unbounded, sans-serif", fontSize: ".8rem", marginBottom: 12 }}>
                 {isAddingMatch ? "Adicionar Partida" : `Editar Partida #${mfId}`}
               </h3>
