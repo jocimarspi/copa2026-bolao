@@ -31,7 +31,36 @@ const BOOTSTRAP_ADMINS = [
   "jocimar.huss@db1.com.br"
 ];
 
+const TEAM_KEYS = [
+  "mexico", "south_africa", "south_korea", "czech_rep",
+  "canada", "bosnia", "qatar", "switzerland",
+  "brazil", "morocco", "haiti", "scotland",
+  "usa", "paraguay", "australia", "turkey",
+  "germany", "curacao", "ivory_coast", "ecuador",
+  "netherlands", "japan", "sweden", "tunisia",
+  "belgium", "egypt", "iran", "new_zealand",
+  "spain", "cape_verde", "saudi_arabia", "uruguay",
+  "france", "senegal", "iraq", "norway",
+  "argentina", "algeria", "austria", "jordan",
+  "portugal", "dr_congo", "uzbekistan", "colombia",
+  "england", "croatia", "ghana", "panama"
+];
 
+const TEAM_FLAGS: Record<string, string> = {
+  mexico: "🇲🇽", south_africa: "🇿🇦", south_korea: "🇰🇷", czech_rep: "🇨🇿",
+  canada: "🇨🇦", bosnia: "🇧🇦", qatar: "🇶🇦", switzerland: "🇨🇭",
+  brazil: "🇧🇷", morocco: "🇲🇦", haiti: "🇭🇹", scotland: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+  usa: "🇺🇸", paraguay: "🇵🇾", australia: "🇦🇺", turkey: "🇹🇷",
+  germany: "🇩🇪", curacao: "🇨🇼", ivory_coast: "🇨🇮", ecuador: "🇪🇨",
+  netherlands: "🇳🇱", japan: "🇯🇵", sweden: "🇸🇪", tunisia: "🇹🇳",
+  belgium: "🇧🇪", egypt: "🇪🇬", iran: "🇮🇷", new_zealand: "🇳🇿",
+  spain: "🇪🇸", cape_verde: "🇨🇻", saudi_arabia: "🇸🇦", uruguay: "🇺🇾",
+  france: "🇫🇷", senegal: "🇸🇳", iraq: "🇮🇶", norway: "🇳🇴",
+  argentina: "🇦🇷", algeria: "🇩🇿", austria: "🇦🇹", jordan: "🇯🇴",
+  portugal: "🇵🇹", dr_congo: "🇨🇩", uzbekistan: "🇺🇿", colombia: "🇨🇴",
+  england: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", croatia: "🇭🇷", ghana: "🇬🇭", panama: "🇵🇦",
+  tbd: "🏳️"
+};
 
 export default function AdminTab() {
   const { t } = useTranslation();
@@ -64,6 +93,8 @@ export default function AdminTab() {
   const [mfTest, setMfTest] = useState<boolean>(false);
   const [mfKo, setMfKo] = useState<string>("");
   const [mfRound, setMfRound] = useState<string>("");
+  const [customHome, setCustomHome] = useState<boolean>(false);
+  const [customAway, setCustomAway] = useState<boolean>(false);
 
   // Local match score input states (for saving results)
   const [matchResultInputs, setMatchResultInputs] = useState<Record<number, { home: string; away: string }>>({});
@@ -324,6 +355,12 @@ export default function AdminTab() {
       setMfRod(m.rod || "");
       setMfTest(!!m.test);
       setMfRound(m.round || "");
+      
+      const isHomePredefined = TEAM_KEYS.includes(m.h) || m.h === "tbd";
+      const isAwayPredefined = TEAM_KEYS.includes(m.a) || m.a === "tbd";
+      setCustomHome(!isHomePredefined);
+      setCustomAway(!isAwayPredefined);
+
       if (m.ko) {
         try {
           const d = parseKoDate(m.ko);
@@ -346,6 +383,8 @@ export default function AdminTab() {
       setMfTest(false);
       setMfRound("");
       setMfKo("");
+      setCustomHome(false);
+      setCustomAway(false);
     }
   };
 
@@ -506,6 +545,14 @@ export default function AdminTab() {
   const allAdmins = Array.from(new Set([...BOOTSTRAP_ADMINS, ...admins]));
   const sortedMatchesForAdmin = [...matches].sort((a, b) => parseKoDate(a.ko).getTime() - parseKoDate(b.ko).getTime());
   const sortedBUsForAdmin = Object.values(businessUnits).sort((a, b) => a.label.localeCompare(b.label));
+  const sortedTeams = [
+    { key: "tbd", name: t("tournament_tbd") || "A definir", flag: "🏳️" },
+    ...TEAM_KEYS.map(key => ({
+      key,
+      name: t(key) || key,
+      flag: TEAM_FLAGS[key] || "🏳️"
+    })).sort((a, b) => a.name.localeCompare(b.name))
+  ];
 
   return (
     <div className="tab tab--active">
@@ -768,12 +815,102 @@ export default function AdminTab() {
 
               <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
                 <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
-                  <label>Time Casa (Chave)</label>
-                  <input type="text" value={mfHome} onChange={(e) => setMfHome(e.target.value)} placeholder="brazil" />
+                  <label>Time Casa</label>
+                  {!customHome ? (
+                    <select 
+                      value={mfHome} 
+                      onChange={(e) => {
+                        if (e.target.value === "custom") {
+                          setCustomHome(true);
+                          setMfHome("");
+                        } else {
+                          setMfHome(e.target.value);
+                        }
+                      }}
+                      style={{ width: "100%" }}
+                    >
+                      <option value="">Selecione o Time...</option>
+                      {sortedTeams.map(team => (
+                        <option key={team.key} value={team.key}>
+                          {team.flag} {team.name}
+                        </option>
+                      ))}
+                      <option value="custom" style={{ fontStyle: "italic", color: "var(--gold)" }}>
+                        ✍️ Outro time (digitar)...
+                      </option>
+                    </select>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <input 
+                        type="text" 
+                        value={mfHome} 
+                        onChange={(e) => setMfHome(e.target.value)} 
+                        placeholder="Nome (ex: brazil)" 
+                        style={{ flex: 1 }}
+                      />
+                      <button 
+                        type="button"
+                        className="btn btn--sm btn--outline"
+                        style={{ padding: "8px", minWidth: "40px" }}
+                        onClick={() => {
+                          setCustomHome(false);
+                          setMfHome("");
+                        }}
+                        title="Voltar para lista"
+                      >
+                        📋
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
-                  <label>Time Fora (Chave)</label>
-                  <input type="text" value={mfAway} onChange={(e) => setMfAway(e.target.value)} placeholder="argentina" />
+                  <label>Time Fora</label>
+                  {!customAway ? (
+                    <select 
+                      value={mfAway} 
+                      onChange={(e) => {
+                        if (e.target.value === "custom") {
+                          setCustomAway(true);
+                          setMfAway("");
+                        } else {
+                          setMfAway(e.target.value);
+                        }
+                      }}
+                      style={{ width: "100%" }}
+                    >
+                      <option value="">Selecione o Time...</option>
+                      {sortedTeams.map(team => (
+                        <option key={team.key} value={team.key}>
+                          {team.flag} {team.name}
+                        </option>
+                      ))}
+                      <option value="custom" style={{ fontStyle: "italic", color: "var(--gold)" }}>
+                        ✍️ Outro time (digitar)...
+                      </option>
+                    </select>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <input 
+                        type="text" 
+                        value={mfAway} 
+                        onChange={(e) => setMfAway(e.target.value)} 
+                        placeholder="Nome (ex: argentina)" 
+                        style={{ flex: 1 }}
+                      />
+                      <button 
+                        type="button"
+                        className="btn btn--sm btn--outline"
+                        style={{ padding: "8px", minWidth: "40px" }}
+                        onClick={() => {
+                          setCustomAway(false);
+                          setMfAway("");
+                        }}
+                        title="Voltar para lista"
+                      >
+                        📋
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 
