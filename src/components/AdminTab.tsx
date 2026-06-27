@@ -946,13 +946,24 @@ export default function AdminTab() {
           )}
 
           <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
-            <button className="btn btn--sm" onClick={() => openMatchForm(null)}>
-              ➕ Criar Nova Partida
-            </button>
             <button className="btn btn--sm btn--outline" onClick={handleRestoreDefaultMatches}>
               🌱 Restaurar Tabela Padrão
             </button>
           </div>
+
+          <button 
+            className="fab-btn" 
+            onClick={() => {
+              openMatchForm(null);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }} 
+            title={t("adm_btn_new_match") || "Criar Nova Partida"}
+          >
+            <span className="fab-btn__icon">➕</span>
+            <span className="fab-btn__text">
+              {(t("adm_btn_new_match") || "Criar Nova Partida").replace("➕ ", "")}
+            </span>
+          </button>
 
           <div id="admin-matches-list">
             {sortedMatchesForAdmin.map(m => {
