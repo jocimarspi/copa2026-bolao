@@ -232,16 +232,11 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
   };
 
   // Filter and sort matches
-  let filteredMatches = [...matches];
-  if (currentFilter === "teste") {
-    filteredMatches = filteredMatches.filter(m => m.test);
-  } else {
-    filteredMatches = filteredMatches.filter(m => !m.test);
-    if (currentFilter === "matamata") {
-      filteredMatches = filteredMatches.filter(m => ["R32", "R16", "QF", "SF", "3RD", "F"].includes(m.rod));
-    } else if (currentFilter !== "todos") {
-      filteredMatches = filteredMatches.filter(m => m.rod === currentFilter);
-    }
+  let filteredMatches = matches.filter(m => !m.test);
+  if (currentFilter === "matamata") {
+    filteredMatches = filteredMatches.filter(m => ["R32", "R16", "QF", "SF", "3RD", "F"].includes(m.rod));
+  } else if (currentFilter !== "todos") {
+    filteredMatches = filteredMatches.filter(m => m.rod === currentFilter);
   }
 
   // Filter finished matches if toggle is off, but keep finished matches of today
@@ -316,12 +311,6 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
             onClick={() => setCurrentFilter("matamata")}
           >
             ⚔️ {t("filter_knockout")}
-          </button>
-          <button
-            className={`filter-btn ${currentFilter === "teste" ? "is-active" : ""}`}
-            onClick={() => setCurrentFilter("teste")}
-          >
-            🧪 {t("filter_test") || "Testes"}
           </button>
         </div>
 
