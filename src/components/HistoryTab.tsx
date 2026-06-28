@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useData, Match, Result } from "../contexts/DataContext";
 import { useAuth } from "../contexts/AuthContext";
-import { sgn, ptsRound, TN, getFlagUrl, fmtDT } from "../helpers";
+import { sgn, ptsRound, TN, getFlagEmoji, fmtDT } from "../helpers";
 
 export default function HistoryTab() {
   const { t } = useTranslation();
@@ -83,8 +83,8 @@ export default function HistoryTab() {
                   {roundGames.map((m) => {
                     const r = results[m.id];
                     const done = r && r.home !== null;
-                    const homeFlag = getFlagUrl(m.h);
-                    const awayFlag = getFlagUrl(m.a);
+                    const homeFlag = getFlagEmoji(m.h);
+                    const awayFlag = getFlagEmoji(m.a);
 
                     return (
                       <div 
@@ -107,7 +107,7 @@ export default function HistoryTab() {
                             <span style={{ flex: 1, textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={TN(m.h)}>
                               {TN(m.h)}
                             </span>
-                            {homeFlag && <img src={homeFlag} style={{ width: "20px", height: "auto", flexShrink: 0 }} alt="" />}
+                            {homeFlag && <span style={{ fontSize: "1.2rem", flexShrink: 0, lineHeight: 1 }}>{homeFlag}</span>}
                             <span style={{ display: "inline-flex", gap: "4px", color: "var(--gold)", fontWeight: 700, minWidth: "50px", justifyContent: "center", flexShrink: 0 }}>
                               {done ? (
                                 <>
@@ -119,7 +119,7 @@ export default function HistoryTab() {
                                 <span style={{ color: "var(--muted)", fontWeight: "normal" }}>– x –</span>
                               )}
                             </span>
-                            {awayFlag && <img src={awayFlag} style={{ width: "20px", height: "auto", flexShrink: 0 }} alt="" />}
+                            {awayFlag && <span style={{ fontSize: "1.2rem", flexShrink: 0, lineHeight: 1 }}>{awayFlag}</span>}
                             <span style={{ flex: 1, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={TN(m.a)}>
                               {TN(m.a)}
                             </span>
@@ -159,8 +159,8 @@ export default function HistoryTab() {
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {completedOfficialMatches.map((m) => {
                   const r = results[m.id];
-                  const homeFlag = getFlagUrl(m.h);
-                  const awayFlag = getFlagUrl(m.a);
+                  const homeFlag = getFlagEmoji(m.h);
+                  const awayFlag = getFlagEmoji(m.a);
                   const isKnockout = ["R32", "R16", "QF", "SF", "3RD", "F"].includes(m.rod);
                   const groupLabel = m.g ? `${t("group_short")}${m.g}` : (isKnockout ? t("filter_knockout") : "");
                   const roundLabel = 
@@ -197,13 +197,13 @@ export default function HistoryTab() {
                           <span style={{ flex: 1, textAlign: "right", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={TN(m.h)}>
                             {TN(m.h)}
                           </span>
-                          {homeFlag && <img src={homeFlag} style={{ width: "20px", height: "auto", flexShrink: 0 }} alt="" />}
+                          {homeFlag && <span style={{ fontSize: "1.2rem", flexShrink: 0, lineHeight: 1 }}>{homeFlag}</span>}
                           <span style={{ display: "inline-flex", gap: "4px", color: "var(--gold)", fontWeight: 700, minWidth: "50px", justifyContent: "center", flexShrink: 0 }}>
                             <span>{r.home}</span>
                             <span style={{ color: "var(--muted)", fontWeight: "normal" }}>x</span>
                             <span>{r.away}</span>
                           </span>
-                          {awayFlag && <img src={awayFlag} style={{ width: "20px", height: "auto", flexShrink: 0 }} alt="" />}
+                          {awayFlag && <span style={{ fontSize: "1.2rem", flexShrink: 0, lineHeight: 1 }}>{awayFlag}</span>}
                           <span style={{ flex: 1, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={TN(m.a)}>
                             {TN(m.a)}
                           </span>

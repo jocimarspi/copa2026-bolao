@@ -169,6 +169,51 @@ const _FM = {
   "turkiye":"tr","ir_iran":"ir"
 };
 
+export const TEAM_FLAGS: Record<string, string> = {
+  mexico: "🇲🇽", south_africa: "🇿🇦", south_korea: "🇰🇷", czech_rep: "🇨🇿",
+  canada: "🇨🇦", bosnia: "🇧🇦", qatar: "🇶🇦", switzerland: "🇨🇭",
+  brazil: "🇧🇷", morocco: "🇲🇦", haiti: "🇭🇹", scotland: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+  usa: "🇺🇸", paraguay: "🇵🇾", australia: "🇦🇺", turkey: "🇹🇷",
+  germany: "🇩🇪", curacao: "🇨🇼", ivory_coast: "🇨🇮", ecuador: "🇪🇨",
+  netherlands: "🇳🇱", japan: "🇯🇵", sweden: "🇸🇪", tunisia: "🇹🇳",
+  belgium: "🇧🇪", egypt: "🇪🇬", iran: "🇮🇷", new_zealand: "🇳🇿",
+  spain: "🇪🇸", cape_verde: "🇨🇻", saudi_arabia: "🇸🇦", uruguay: "🇺🇾",
+  france: "🇫🇷", senegal: "🇸🇳", iraq: "🇮🇶", norway: "🇳🇴",
+  argentina: "🇦🇷", algeria: "🇩🇿", austria: "🇦🇹", jordan: "🇯🇴",
+  portugal: "🇵🇹", dr_congo: "🇨🇩", uzbekistan: "🇺🇿", colombia: "🇨🇴",
+  england: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", croatia: "🇭🇷", ghana: "🇬🇭", panama: "🇵🇦",
+  tbd: "🏳️"
+};
+
+export function getFlagEmoji(key: string): string {
+  if (!key) return "🏳️";
+  const normalized = key.trim().toLowerCase();
+  
+  if (TEAM_FLAGS[normalized]) {
+    return TEAM_FLAGS[normalized];
+  }
+
+  const code = _FM[normalized];
+  if (!code) return "🏳️";
+
+  if (code === "gb-eng") return "🏴󠁧󠁢󠁥󠁮󠁧󠁿";
+  if (code === "gb-sct") return "🏴󠁧󠁢󠁳󠁣󠁴󠁿";
+
+  if (code.length === 2) {
+    const codePoints = code
+      .toUpperCase()
+      .split("")
+      .map(char => 127397 + char.charCodeAt(0));
+    try {
+      return String.fromCodePoint(...codePoints);
+    } catch (_) {
+      return "🏳️";
+    }
+  }
+
+  return "🏳️";
+}
+
 export function getFlagUrl(key) {
   const c = _FM[key];
   if (!c) return null;

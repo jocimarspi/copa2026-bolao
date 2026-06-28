@@ -21,7 +21,8 @@ import {
   fmtDT, 
   parseKoDate, 
   TN, 
-  getFlagUrl 
+  getFlagEmoji,
+  TEAM_FLAGS
 } from "../helpers";
 import { DEFAULT_BUSINESS_UNITS, DEFAULT_MATCHES } from "../constants";
 
@@ -46,21 +47,7 @@ const TEAM_KEYS = [
   "england", "croatia", "ghana", "panama"
 ];
 
-const TEAM_FLAGS: Record<string, string> = {
-  mexico: "🇲🇽", south_africa: "🇿🇦", south_korea: "🇰🇷", czech_rep: "🇨🇿",
-  canada: "🇨🇦", bosnia: "🇧🇦", qatar: "🇶🇦", switzerland: "🇨🇭",
-  brazil: "🇧🇷", morocco: "🇲🇦", haiti: "🇭🇹", scotland: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
-  usa: "🇺🇸", paraguay: "🇵🇾", australia: "🇦🇺", turkey: "🇹🇷",
-  germany: "🇩🇪", curacao: "🇨🇼", ivory_coast: "🇨🇮", ecuador: "🇪🇨",
-  netherlands: "🇳🇱", japan: "🇯🇵", sweden: "🇸🇪", tunisia: "🇹🇳",
-  belgium: "🇧🇪", egypt: "🇪🇬", iran: "🇮🇷", new_zealand: "🇳🇿",
-  spain: "🇪🇸", cape_verde: "🇨🇻", saudi_arabia: "🇸🇦", uruguay: "🇺🇾",
-  france: "🇫🇷", senegal: "🇸🇳", iraq: "🇮🇶", norway: "🇳🇴",
-  argentina: "🇦🇷", algeria: "🇩🇿", austria: "🇦🇹", jordan: "🇯🇴",
-  portugal: "🇵🇹", dr_congo: "🇨🇩", uzbekistan: "🇺🇿", colombia: "🇨🇴",
-  england: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", croatia: "🇭🇷", ghana: "🇬🇭", panama: "🇵🇦",
-  tbd: "🏳️"
-};
+
 
 export default function AdminTab() {
   const { t } = useTranslation();
@@ -972,8 +959,8 @@ export default function AdminTab() {
               const hs = scoreDefined ? r.home.toString() : "";
               const as = scoreDefined ? r.away.toString() : "";
 
-              const homeFlag = getFlagUrl(m.h);
-              const awayFlag = getFlagUrl(m.a);
+              const homeFlag = getFlagEmoji(m.h);
+              const awayFlag = getFlagEmoji(m.a);
               const nh = TN(m.h);
               const na = TN(m.a);
 
@@ -1029,19 +1016,19 @@ export default function AdminTab() {
                       {scoreDefined ? (
                         <>
                           <span style={{ fontWeight: 600, flex: 1, textAlign: "right" }}>
-                            {nh} {homeFlag && <img src={homeFlag} style={{ marginLeft: 6, verticalAlign: "middle" }} alt="" />}
+                            {nh} {homeFlag && <span style={{ marginLeft: 6, verticalAlign: "middle", fontSize: "1.1rem" }}>{homeFlag}</span>}
                           </span>
                           <span style={{ fontWeight: 700, color: "var(--gold)", fontSize: "1rem", margin: "0 12px" }}>
                             {hs} × {as}
                           </span>
                           <span style={{ fontWeight: 600, flex: 1, textAlign: "left" }}>
-                            {awayFlag && <img src={awayFlag} style={{ marginRight: 6, verticalAlign: "middle" }} alt="" />} {na}
+                            {awayFlag && <span style={{ marginRight: 6, verticalAlign: "middle", fontSize: "1.1rem" }}>{awayFlag}</span>} {na}
                           </span>
                         </>
                       ) : (
                         <>
                           <span style={{ fontWeight: 600, flex: 1, textAlign: "right" }}>
-                            {nh} {homeFlag && <img src={homeFlag} style={{ marginLeft: 6, verticalAlign: "middle" }} alt="" />}
+                            {nh} {homeFlag && <span style={{ marginLeft: 6, verticalAlign: "middle", fontSize: "1.1rem" }}>{homeFlag}</span>}
                           </span>
                           <div style={{ display: "flex", alignItems: "center", gap: "4px", margin: "0 8px" }}>
                             <input 
@@ -1061,7 +1048,7 @@ export default function AdminTab() {
                             />
                           </div>
                           <span style={{ fontWeight: 600, flex: 1, textAlign: "left" }}>
-                            {awayFlag && <img src={awayFlag} style={{ marginRight: 6, verticalAlign: "middle" }} alt="" />} {na}
+                            {awayFlag && <span style={{ marginRight: 6, verticalAlign: "middle", fontSize: "1.1rem" }}>{awayFlag}</span>} {na}
                           </span>
                         </>
                       )}

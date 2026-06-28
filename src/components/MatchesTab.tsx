@@ -12,7 +12,7 @@ import {
   getUserPredictionStats,
   fmtDT,
   TN,
-  getFlagUrl,
+  getFlagEmoji,
   parseKoDate
 } from "../helpers";
 
@@ -348,8 +348,8 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
             const st = pSt(m.id, predictions, results);
             const op = isOpen(m);
             const lk = lockLbl(m);
-            const homeFlag = getFlagUrl(m.h);
-            const awayFlag = getFlagUrl(m.a);
+            const homeFlag = getFlagEmoji(m.h);
+            const awayFlag = getFlagEmoji(m.a);
             const nh = TN(m.h);
             const na = TN(m.a);
 
@@ -569,7 +569,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
                   <div className="match-card__team match-card__team--home">
                     <span className="match-card__name" title={nh}>{nh}</span>
                     <span className="match-card__flag">
-                      {homeFlag && <img src={homeFlag} style={{ verticalAlign: "middle" }} alt="" />}
+                      {homeFlag}
                     </span>
                   </div>
                   <div className="match-card__vs">
@@ -579,7 +579,7 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
                   </div>
                   <div className="match-card__team match-card__team--away">
                     <span className="match-card__flag">
-                      {awayFlag && <img src={awayFlag} style={{ verticalAlign: "middle" }} alt="" />}
+                      {awayFlag}
                     </span>
                     <span className="match-card__name" title={na}>{na}</span>
                   </div>
