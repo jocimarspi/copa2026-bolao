@@ -42,6 +42,7 @@ export interface UserRankInfo {
   exactCount?: number;
   outcomeCount?: number;
   wrongCount?: number;
+  displayRank?: number;
 }
 
 export interface Prediction {
