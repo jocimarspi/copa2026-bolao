@@ -1,15 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
-import { useData, UserRankInfo } from "../contexts/DataContext";
-import { RI, RC, fmtName, sortUsers, getUsersWithRanks } from "../helpers";
+import { useData, UserRankInfo, Match } from "../contexts/DataContext";
+import { RI, RC, fmtName, sortUsers, getUsersWithRanks, getFlagEmoji, TN, pSt } from "../helpers";
 
 export default function LeaderboardTab() {
   const { t } = useTranslation();
   const { user: authUser } = useAuth();
-  const { users, businessUnits, loading: dataLoading } = useData();
+  const { users, businessUnits, matches, results, loading: dataLoading } = useData();
 
   const [expandedUnits, setExpandedUnits] = useState<Set<string>>(new Set());
   const [unitMembers, setUnitMembers] = useState<Record<string, UserRankInfo[]>>({});
@@ -24,6 +24,41 @@ export default function LeaderboardTab() {
   const [selectedUser, setSelectedUser] = useState<UserRankInfo | null>(null);
   const [selectedUnitRankingId, setSelectedUnitRankingId] = useState<string | null>(null);
   const [visibleUnitRankingLimit, setVisibleUnitRankingLimit] = useState(20);
+
+  const [selectedUserPredictions, setSelectedUserPredictions] = useState<Record<number, { home: number, away: number }>>({});
+  const [predictionsLoading, setPredictionsLoading] = useState<boolean>(false);
+  const [expandedCategory, setExpandedCategory] = useState<"exact" | "correct" | "error" | null>(null);
+
+  useEffect(() => {
+    if (!selectedUser) {
+      setSelectedUserPredictions({});
+      setExpandedCategory(null);
+      return;
+    }
+
+    const fetchUserPredictions = async () => {
+      setPredictionsLoading(true);
+      try {
+        const q = collection(db, "users", selectedUser.uid, "predictions");
+        const snap = await getDocs(q);
+        const preds: Record<number, { home: number, away: number }> = {};
+        snap.forEach(docSnap => {
+          const data = docSnap.data();
+          const mid = Number(docSnap.id);
+          if (!isNaN(mid)) {
+            preds[mid] = { home: data.home, away: data.away };
+          }
+        });
+        setSelectedUserPredictions(preds);
+      } catch (err) {
+        console.error("Error fetching user predictions:", err);
+      } finally {
+        setPredictionsLoading(false);
+      }
+    };
+
+    fetchUserPredictions();
+  }, [selectedUser]);
 
   // 1. General Classification (Top 10 users)
   const allRankedUsers = getUsersWithRanks(sortUsers(users));
@@ -187,6 +222,36 @@ export default function LeaderboardTab() {
       avatarClass = "stats-modal-avatar--bronze";
     }
 
+    const exactMatches: { match: Match; prediction: { home: number; away: number }; result: { home: number; away: number } }[] = [];
+    const correctMatches: { match: Match; prediction: { home: number; away: number }; result: { home: number; away: number } }[] = [];
+    const wrongMatches: { match: Match; prediction: { home: number; away: number }; result: { home: number; away: number }; isPredicted: boolean }[] = [];
+
+    matches.forEach(m => {
+      if (m.test) return;
+      const r = results[m.id];
+      if (!r || r.home === null) return;
+
+      const pred = selectedUserPredictions[m.id];
+      const isPredicted = !!pred;
+      const predVal = pred || { home: 0, away: 0 };
+      const uSt = pSt(m.id, { [m.id]: predVal }, results);
+
+      const item = {
+        match: m,
+        prediction: predVal,
+        result: r as { home: number; away: number },
+        isPredicted
+      };
+
+      if (uSt === "e") {
+        exactMatches.push(item);
+      } else if (uSt === "w") {
+        correctMatches.push(item);
+      } else {
+        wrongMatches.push(item);
+      }
+    });
+
     return (
       <div className="stats-modal-backdrop" onClick={() => setSelectedUser(null)}>
         <div className={`stats-modal-card ${cardClass}`} onClick={(e) => e.stopPropagation()}>
@@ -227,28 +292,162 @@ export default function LeaderboardTab() {
           </div>
 
           <div className="stats-modal-grid">
-            <div className="stats-modal-item stats-modal-item--exact">
-              <div className="stats-modal-label-group">
-                <span className="stats-modal-icon">🎯</span>
-                <span className="stats-modal-label">{t("stats_exact_scores")}</span>
+            {/* Exact Scores */}
+            <div 
+              className={`stats-modal-item stats-modal-item--exact ${expandedCategory === "exact" ? "is-expanded" : ""}`}
+              onClick={() => setExpandedCategory(expandedCategory === "exact" ? null : "exact")}
+              style={{ cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "stretch", gap: "4px" }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                <div className="stats-modal-label-group">
+                  <span className="stats-modal-icon">🎯</span>
+                  <span className="stats-modal-label">{t("stats_exact_scores")}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span className="stats-modal-value">{selectedUser.exactCount || 0}</span>
+                  <span style={{ 
+                    fontSize: "0.75rem", 
+                    color: "var(--muted)", 
+                    transition: "transform 0.2s", 
+                    transform: expandedCategory === "exact" ? "rotate(180deg)" : "rotate(0deg)" 
+                  }}>▼</span>
+                </div>
               </div>
-              <span className="stats-modal-value">{selectedUser.exactCount || 0}</span>
+              {expandedCategory === "exact" && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  {predictionsLoading ? (
+                    <div style={{ padding: "8px", fontSize: "0.75rem", color: "var(--muted)", textAlign: "center" }}>
+                      {t("preds_accordion_loading") || "Carregando..."}
+                    </div>
+                  ) : exactMatches.length === 0 ? (
+                    <div style={{ padding: "8px", fontSize: "0.75rem", color: "var(--muted)", textAlign: "center" }}>
+                      {t("history_empty") || "Nenhum palpite nesta categoria."}
+                    </div>
+                  ) : (
+                    <div className="stats-modal-pred-list">
+                      {exactMatches.map(item => (
+                        <div key={item.match.id} className="stats-modal-pred-row">
+                          <div className="stats-modal-pred-teams">
+                            <span>{getFlagEmoji(item.match.h)} {TN(item.match.h)}</span>
+                            <span style={{ color: "var(--muted)" }}>x</span>
+                            <span>{getFlagEmoji(item.match.a)} {TN(item.match.a)}</span>
+                          </div>
+                          <div className="stats-modal-pred-scores">
+                            <span className="stats-modal-pred-real">{item.result.home} - {item.result.away}</span>
+                            <span className="stats-modal-pred-guess">({t("pred_label")}{item.prediction.home} - {item.prediction.away})</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            <div className="stats-modal-item stats-modal-item--correct">
-              <div className="stats-modal-label-group">
-                <span className="stats-modal-icon">🟢</span>
-                <span className="stats-modal-label">{t("stats_correct_results")}</span>
+            {/* Correct Results */}
+            <div 
+              className={`stats-modal-item stats-modal-item--correct ${expandedCategory === "correct" ? "is-expanded" : ""}`}
+              onClick={() => setExpandedCategory(expandedCategory === "correct" ? null : "correct")}
+              style={{ cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "stretch", gap: "4px" }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                <div className="stats-modal-label-group">
+                  <span className="stats-modal-icon">🟢</span>
+                  <span className="stats-modal-label">{t("stats_correct_results")}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span className="stats-modal-value">{selectedUser.outcomeCount || 0}</span>
+                  <span style={{ 
+                    fontSize: "0.75rem", 
+                    color: "var(--muted)", 
+                    transition: "transform 0.2s", 
+                    transform: expandedCategory === "correct" ? "rotate(180deg)" : "rotate(0deg)" 
+                  }}>▼</span>
+                </div>
               </div>
-              <span className="stats-modal-value">{selectedUser.outcomeCount || 0}</span>
+              {expandedCategory === "correct" && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  {predictionsLoading ? (
+                    <div style={{ padding: "8px", fontSize: "0.75rem", color: "var(--muted)", textAlign: "center" }}>
+                      {t("preds_accordion_loading") || "Carregando..."}
+                    </div>
+                  ) : correctMatches.length === 0 ? (
+                    <div style={{ padding: "8px", fontSize: "0.75rem", color: "var(--muted)", textAlign: "center" }}>
+                      {t("history_empty") || "Nenhum palpite nesta categoria."}
+                    </div>
+                  ) : (
+                    <div className="stats-modal-pred-list">
+                      {correctMatches.map(item => (
+                        <div key={item.match.id} className="stats-modal-pred-row">
+                          <div className="stats-modal-pred-teams">
+                            <span>{getFlagEmoji(item.match.h)} {TN(item.match.h)}</span>
+                            <span style={{ color: "var(--muted)" }}>x</span>
+                            <span>{getFlagEmoji(item.match.a)} {TN(item.match.a)}</span>
+                          </div>
+                          <div className="stats-modal-pred-scores">
+                            <span className="stats-modal-pred-real">{item.result.home} - {item.result.away}</span>
+                            <span className="stats-modal-pred-guess">({t("pred_label")}{item.prediction.home} - {item.prediction.away})</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            <div className="stats-modal-item stats-modal-item--error">
-              <div className="stats-modal-label-group">
-                <span className="stats-modal-icon">🔴</span>
-                <span className="stats-modal-label">{t("stats_errors")}</span>
+            {/* Errors */}
+            <div 
+              className={`stats-modal-item stats-modal-item--error ${expandedCategory === "error" ? "is-expanded" : ""}`}
+              onClick={() => setExpandedCategory(expandedCategory === "error" ? null : "error")}
+              style={{ cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "stretch", gap: "4px" }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+                <div className="stats-modal-label-group">
+                  <span className="stats-modal-icon">🔴</span>
+                  <span className="stats-modal-label">{t("stats_errors")}</span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span className="stats-modal-value">{selectedUser.wrongCount || 0}</span>
+                  <span style={{ 
+                    fontSize: "0.75rem", 
+                    color: "var(--muted)", 
+                    transition: "transform 0.2s", 
+                    transform: expandedCategory === "error" ? "rotate(180deg)" : "rotate(0deg)" 
+                  }}>▼</span>
+                </div>
               </div>
-              <span className="stats-modal-value">{selectedUser.wrongCount || 0}</span>
+              {expandedCategory === "error" && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  {predictionsLoading ? (
+                    <div style={{ padding: "8px", fontSize: "0.75rem", color: "var(--muted)", textAlign: "center" }}>
+                      {t("preds_accordion_loading") || "Carregando..."}
+                    </div>
+                  ) : wrongMatches.length === 0 ? (
+                    <div style={{ padding: "8px", fontSize: "0.75rem", color: "var(--muted)", textAlign: "center" }}>
+                      {t("history_empty") || "Nenhum palpite nesta categoria."}
+                    </div>
+                  ) : (
+                    <div className="stats-modal-pred-list">
+                      {wrongMatches.map(item => (
+                        <div key={item.match.id} className="stats-modal-pred-row">
+                          <div className="stats-modal-pred-teams">
+                            <span>{getFlagEmoji(item.match.h)} {TN(item.match.h)}</span>
+                            <span style={{ color: "var(--muted)" }}>x</span>
+                            <span>{getFlagEmoji(item.match.a)} {TN(item.match.a)}</span>
+                          </div>
+                          <div className="stats-modal-pred-scores">
+                            <span className="stats-modal-pred-real">{item.result.home} - {item.result.away}</span>
+                            <span className="stats-modal-pred-guess">
+                              {item.isPredicted ? `(${t("pred_label")}${item.prediction.home} - ${item.prediction.away})` : `(${t("pred_none") || "sem palpite"})`}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

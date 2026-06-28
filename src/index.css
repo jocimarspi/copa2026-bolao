@@ -2864,3 +2864,61 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     font-size: 1.25rem;
   }
 }
+
+/* Stats Modal Prediction Accordion List */
+.stats-modal-pred-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+}
+
+.stats-modal-pred-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  padding: 6px 10px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  gap: 8px;
+}
+
+.stats-modal-pred-teams {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.stats-modal-pred-scores {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.68rem;
+  flex-shrink: 0;
+}
+
+.stats-modal-pred-real {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.stats-modal-pred-guess {
+  font-size: 0.6rem;
+  color: var(--muted);
+  font-weight: normal;
+}
