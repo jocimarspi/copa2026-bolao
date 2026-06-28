@@ -232,7 +232,12 @@ export default function MatchesTab({ setCurrentTab }: { setCurrentTab: (tab: str
   };
 
   // Filter and sort matches
-  let filteredMatches = matches.filter(m => !m.test);
+  let filteredMatches = matches.filter(m => {
+    if (m.test) return false;
+    const hKey = (m.h || "").toLowerCase().trim();
+    const aKey = (m.a || "").toLowerCase().trim();
+    return hKey && aKey && hKey !== "tbd" && hKey !== "tdb" && aKey !== "tbd" && aKey !== "tdb";
+  });
   if (currentFilter === "matamata") {
     filteredMatches = filteredMatches.filter(m => ["R32", "R16", "QF", "SF", "3RD", "F"].includes(m.rod));
   } else if (currentFilter !== "todos") {
